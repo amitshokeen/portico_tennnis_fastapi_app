@@ -1,0 +1,95 @@
+# Python-related files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.env
+*.venv/
+venv/
+env/
+
+# FastAPI specific
+*.db
+instance/
+*.sqlite3
+
+# Alembic (Database Migrations)
+alembic/versions/*.pyc
+alembic/versions/*.pyo
+alembic/versions/__pycache__/
+alembic.ini  # Only ignore if you have environment-specific changes
+
+# Environment variables
+.env
+.env.*
+
+# Logs and database
+logs/
+*.log
+*.db
+dump.rdb
+
+# Frontend - JS, CSS, Bootstrap, jQuery
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+dist/
+build/
+
+# Editor and IDE files
+.vscode/
+.idea/
+
+# System-specific files
+.DS_Store
+Thumbs.db
+
+# Compiled files and cache
+*.egg
+*.egg-info/
+.eggs/
+*.bak
+
+# Static and media files (optional)
+staticfiles/
+media/
+
+# Pytest, coverage, and testing
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+
+# Docker (if used)
+docker-compose.override.yml
+.dockerignore
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore compiled translations
+*.mo
+*.pot
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.swo
+
+# Ignore secrets and credentials
+*.pem
+*.crt
+*.key
+
+# Ignore cache and celery results (if used)
+celerybeat-schedule
+__pycache__/
+
+# Ignore VS Code workspace settings
+.vscode/
+
+# Ignore migration history except the actual migrations
+migrations/
+!migrations/*.py
