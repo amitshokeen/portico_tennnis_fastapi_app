@@ -90,7 +90,7 @@ def redirect_to_login():
 async def render_bookings_page(request: Request, db: db_dependency):
     try:
         user = await get_current_user(request.cookies.get('access_token')) # this will get our JWT
-        
+        #print(f"***** user *****: {user}")
         if user is None:
             return redirect_to_login()
 
