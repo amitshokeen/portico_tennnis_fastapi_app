@@ -82,7 +82,8 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail='Could not validate user.')
         return {'username': username, 'id': user_id, 'user_role': user_role}
-    except JWTError:
+    except JWTError as e:
+        print(f"Exception occurred: {e}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail='Could not validate user.')
     
