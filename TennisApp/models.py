@@ -27,8 +27,11 @@ class Booking(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     date = Column(Date, nullable=False) # booking date
+    
+    # ensure you pass timezone-aware datetime objects when inserting data
     start_time = Column(DateTime(timezone=True), nullable=False) # start of booking
     end_time = Column(DateTime(timezone=True), nullable=False) # end of booking
+    
     created_at_utc = Column(DateTime, default=lambda: datetime.now(timezone.utc)) # Timestamp of booking in utc
     status = Column(String(20), default="Confirmed")  # Can be "Confirmed", "Cancelled"
 
