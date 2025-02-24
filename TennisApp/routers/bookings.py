@@ -94,7 +94,8 @@ async def render_bookings_page(request: Request, db: db_dependency):
         if user is None:
             return redirect_to_login()
 
-        bookings = db.query(Booking).filter(Booking.user_id == user.get("id")).all()
+        #bookings = db.query(Booking).filter(Booking.user_id == user.get("id")).all()
+        bookings = db.query(Booking).all()
 
         return templates.TemplateResponse("bookings.html", {"request": request, "bookings": bookings, "user": user})
     except Exception as e:
