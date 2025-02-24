@@ -10,11 +10,14 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 from fastapi.templating import Jinja2Templates
 
+
 router = APIRouter(
     prefix='/auth',
     tags=['auth']
 )
 
+##### change the SECRET_KEY value. Use a secrets manager like AWS Secrets Manager when deploying to production.
+##### add the secrets file to .gitignore
 SECRET_KEY = '9d8fb39136049682393c984524b246282d0999f1f4cbeebf03786535485a09f0'
 ALGORITHM = 'HS256'
 
@@ -46,6 +49,13 @@ db_dependency = Annotated[Session, Depends(get_db)]
 templates = Jinja2Templates(directory="TennisApp/templates")
 
 ### Pages ###
+@router.get("/login-page")
+def render_login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@router.get("/register-page")
+def render_register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
 
 ### Endpoints ###
 def authenticate_user(username: str, password: str, db: db_dependency):
