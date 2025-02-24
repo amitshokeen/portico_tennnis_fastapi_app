@@ -100,3 +100,5 @@ async def render_bookings_page(request: Request, db: db_dependency):
     except Exception as e:
         print(f"Exception occurred: {e}")
         return redirect_to_login()
+    
+    # test comment
