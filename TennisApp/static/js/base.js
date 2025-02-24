@@ -28,7 +28,7 @@ const loginForm = document.getElementById("loginForm");
                     logout();
                     // Save token to cookie
                     document.cookie = `access_token=${data.access_token}; path=/`;
-                    window.location.href = '/docs'; // Change this to your desired redirect page
+                    window.location.href = '/bookings/bookings-page'; // Change this to your desired redirect page
                 } else {
                     // Handle error
                     const errorData = await response.json();
@@ -40,7 +40,6 @@ const loginForm = document.getElementById("loginForm");
             }
         });
     }
-
 
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
