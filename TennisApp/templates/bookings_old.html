@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--<link rel="stylesheet" href="styles.css">-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/css/styles.css') }}">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>TennisApp</title>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-xl font-bold mb-4">Book Your Slot</h2>
+
+        <label class="block mb-1">Select a Date:</label>
+        <div id="datePickerContainer">
+            <input type="date" id="datePicker" class="w-full p-2 border rounded-md">
+        </div>
+
+        <label class="block mt-4 mb-1">Select Start Time:</label>
+        <!-- Updated AM/PM Filter for Start Time -->
+        <div class="flex justify-center gap-2 mt-2">
+            <button id="startAM" class="px-3 py-1 rounded-md active-filter">AM</button>
+            <button id="startPM" class="px-3 py-1 rounded-md">PM</button>
+        </div>
+        <div class="dropdown">
+            <input type="text" id="startTimePicker" class="w-full p-2 border rounded-md" placeholder="Pick start time" readonly>
+            <div class="dropdown-menu" id="startTimeMenu"></div>
+        </div>
+
+        <label class="block mt-4 mb-1">Select End Time:</label>
+        <!-- Updated AM/PM Filter for End Time -->
+        <div class="flex justify-center gap-2 mt-2">
+            <button id="endAM" class="px-3 py-1 rounded-md active-filter">AM</button>
+            <button id="endPM" class="px-3 py-1 rounded-md">PM</button>
+        </div>
+        <div class="dropdown">
+            <input type="text" id="endTimePicker" class="w-full p-2 border rounded-md" placeholder="Pick end time" readonly>
+            <div class="dropdown-menu" id="endTimeMenu"></div>
+        </div>
+        <button id="confirmEndTime" class="w-full mt-4 py-2 bg-blue-600 text-white rounded-md hidden">Confirm Booking</button>
+        <h3 class="text-lg font-semibold mt-6">Blocked Time Slots</h3>
+        <table class="w-full mt-3 border-collapse border border-gray-300">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="border border-gray-300 px-2 py-1">User Name</th>
+                <th class="border border-gray-300 px-2 py-1">Date</th>
+                <th class="border border-gray-300 px-2 py-1">Start Time</th>
+                <th class="border border-gray-300 px-2 py-1">End Time</th>
+            </tr>
+        </thead>
+        <tbody id="blockedTimeTable">
+            <!-- Dynamic rows will be added here -->
+        </tbody>
+        </table>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="{{ url_for('static', path='/js/populateBlockedTimeTable.js') }}" defer></script>
+    <script src="{{ url_for('static', path='/js/freeTimes.js') }}" defer></script>
+    <script src="{{ url_for('static', path='/js/populateStartTimes.js') }}" defer></script>
+    <script src="{{ url_for('static', path='/js/populateEndTimes.js') }}" defer></script>
+    <script src="{{ url_for('static', path='/js/script.js') }}" defer></script>
+    <!--<script src="populateBlockedTimeTable.js"></script>
+    <script src="freeTimes.js"></script>
+    <script src="populateStartTimes.js"></script>
+    <script src="populateEndTimes.js"></script>
+    <script src="script.js"></script>-->
+</body>
+</html>
