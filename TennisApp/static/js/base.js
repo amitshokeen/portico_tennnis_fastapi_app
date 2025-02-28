@@ -143,6 +143,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const startTimePicker = document.getElementById("startTimePicker");
     const startTimeMenu = document.getElementById("startTimeMenu");
     const datePicker = document.getElementById("datePicker"); // The selected date input
+    const endTimePicker = document.getElementById("endTimePicker");
+    const endTimeMenu = document.getElementById("endTimeMenu");
 
     if (startTimePicker && startTimeMenu) {
         startTimePicker.addEventListener("click", async () => {
@@ -191,7 +193,6 @@ document.addEventListener("DOMContentLoaded", function () {
         startTimeMenu.innerHTML = ""; // Clear existing options
 
         if (availableTimes.length === 0) {
-            //startTimeMenu.innerHTML = "<div class='p-2 text-gray-500'>No available times</div>";
             startTimeMenu.innerHTML = "<div>No available times</div>";
             return;
         }
@@ -199,9 +200,11 @@ document.addEventListener("DOMContentLoaded", function () {
         availableTimes.forEach(time => {
             const timeOption = document.createElement("div");
             timeOption.textContent = time;
-            //timeOption.classList.add("p-2", "cursor-pointer", "hover:bg-gray-200");
             timeOption.addEventListener("click", () => {
                 startTimePicker.value = time; // Set the selected time in the input box
+                endTimePicker.value = "";
+                endTimeMenu.innerHTML = "";
+                endTimeMenu.style.display = "none"; // Hide dropdown
                 startTimeMenu.style.display = "none"; // Hide dropdown
             });
 
@@ -219,7 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Show endTimePicker dropdown on click
 document.addEventListener("DOMContentLoaded", function () {
-    const startTimePicker = document.getElementById('startTimePicker');
+    const startTimePicker = document.getElementById("startTimePicker");
     const endTimePicker = document.getElementById("endTimePicker");
     const endTimeMenu = document.getElementById("endTimeMenu");
     const datePicker = document.getElementById("datePicker"); // The selected date input
