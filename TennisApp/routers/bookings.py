@@ -178,6 +178,104 @@ def get_available_start_times_formatted(aatm, bstm, betm):
     # Convert back to HH:MM format for readability
     astf = [f"{time // 60:02d}:{time % 60:02d}" for time in available_start_times]
     return astf
+
+def convert_time_to_iso(date_str: str, time_str: str) -> str:
+    """
+    Convert 'YYYY-MM-DD' and 'HH:MM' into full ISO 8601 format (Sydney time).
+    
+    Example:
+        convert_time_to_iso('2025-02-28', '16:00')
+        → '2025-02-28T16:00:00+11:00' (Sydney Time)
+    """
+    # Convert date string to a datetime object
+    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+
+    # Convert time string to hours & minutes
+    hours, minutes = map(int, time_str.split(":"))
+
+    # Combine into a full datetime object (without timezone)
+    datetime_obj = datetime(
+        date_obj.year, date_obj.month, date_obj.day, hours, minutes, 0
+    )
+
+    # Localize to Sydney timezone (handles daylight saving automatically)
+    localized_datetime = sydney_tz.localize(datetime_obj)
+
+    # Convert to ISO format with timezone offset
+    return localized_datetime.isoformat()
+
+def get_available_end_times(aatm, bstm, betm, selected_start_time):
+    """
+    - aatm: all_available_times_minutes
+    - bstm: booking_start_time_minutes
+    - betm: booking_end_time_minutes
+    - selected_start_time: User's selected start time in minutes from midnight
+    """
+    # Step 1: Get possible end times (every 15 min from selected start time onwards)
+    possible_end_times = [t for t in aatm if t > selected_start_time]
+
+    # Step 2: Find the next booked start time after selected start time
+    next_booked_start_time = next((t for t in sorted(bstm) if t > selected_start_time), None)
+
+    print(f"Possible end times (before filtering): {possible_end_times}")
+    print(f"Next booked start time: {next_booked_start_time}")
+
+    # Step 3: Restrict end times to be less than the next booked start time
+    if next_booked_start_time:
+        possible_end_times = [t for t in possible_end_times if t <= next_booked_start_time]
+
+    print(f"Final list of available end times in minutes: {possible_end_times}")
+    
+    # Convert to HH:MM format
+    return [minutes_to_time(t) for t in possible_end_times]
+
+@router.post("/populate-end-times", status_code=status.HTTP_200_OK)
+async def populate_end_times(
+    user: user_dependency,
+    db: db_dependency,
+    request: dict  # Expecting JSON body with {"date": "YYYY-MM-DD", "start_time": "HH:MM"}
+):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+    
+    # Convert user-selected start time to ISO 8601 format
+    user_selected_start_time_iso = convert_time_to_iso(
+        request.get('date'), request.get('start_time')
+    )
+
+    print(f"User's selected start time in ISO: {user_selected_start_time_iso}")
+
+    # Convert user-selected start time to minutes from midnight
+    selected_start_time_minutes = iso_time_to_minutes(user_selected_start_time_iso)
+    print(f"Converted start time in minutes: {selected_start_time_minutes}")
+
+    # Generate all possible end times (15 min intervals, from start time to 10:00 PM)
+    all_available_times_minutes = list(range(START_HOUR, END_HOUR+15+1, 15))
+
+    # Fetch bookings for the selected date
+    booking_start_time_minutes = []
+    booking_end_time_minutes = []
+
+    bookings = db.query(Booking.date, Booking.start_time, Booking.end_time)\
+                        .filter(Booking.date == request.get('date'))\
+                        .all()
+
+    for booking in bookings:
+        print(f"Date: {booking.date}, Start: {booking.start_time.isoformat()}, End: {booking.end_time.isoformat()}")
+        if booking.date.isoformat() == request.get('date'):  # Ensure it's the selected date
+            booking_start_time_minutes.append(iso_time_to_minutes(booking.start_time.isoformat()))
+            booking_end_time_minutes.append(iso_time_to_minutes(booking.end_time.isoformat()))
+
+    print(f"booking_start_time_minutes: {booking_start_time_minutes}")
+    print(f"booking_end_time_minutes: {booking_end_time_minutes}")
+
+    # Get filtered end times
+    available_end_times = get_available_end_times(
+        all_available_times_minutes, booking_start_time_minutes, booking_end_time_minutes, selected_start_time_minutes
+    )
+
+    return {"available_end_times": available_end_times}
+
 @router.post("/populate-start-times", status_code=status.HTTP_200_OK)
 async def populate_start_times(
     user: user_dependency,
@@ -215,24 +313,3 @@ async def populate_start_times(
     available_start_times_formatted = get_available_start_times_formatted(all_available_times_minutes, booking_start_time_minutes, booking_end_time_minutes)
 
     return {"available_start_times": available_start_times_formatted}
-
-@router.post("/populate-end-times", status_code=status.HTTP_200_OK)
-async def populate_end_times(
-    user: user_dependency,
-    db: db_dependency,
-    request: dict  # Expecting JSON body with {"date": "YYYY-MM-DD", "start_time": "16:30"}
-):
-    if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
-    
-    # Convert to ISO 8601 with Timezone Offset.
-    user_selected_date_iso = convert_to_iso8601(request.get('date')) #'YYYY-MM-DD' to 'YYYY-MM-DDT00:00:00+11:00'
-    print(f"User's selected date in ISO: {user_selected_date_iso}")
-    # current time in Sydney in ISO format. E.g. 2025-02-28T11:34:07+11:00
-    print(f"datetime.now(sydney_tz).isoformat(timespec='seconds'): \
-{datetime.now(sydney_tz).isoformat(timespec='seconds')}") 
-    
-    all_available_times_minutes = list(range(START_HOUR+15, END_HOUR+15+1, 15))  # Every 15 minutes from 06:00 to 21:45
-    all_formatted_available_times = [minutes_to_time(m) for m in all_available_times_minutes]
-    
-    return {"available_end_times": all_formatted_available_times}
