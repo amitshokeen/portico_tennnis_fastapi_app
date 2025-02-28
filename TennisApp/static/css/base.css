@@ -55,3 +55,42 @@ body {
     color: red;
     margin-top: 10px;
 }
+
+/* Start Time Dropdown */
+#startTimeMenu, #endTimeMenu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Match the input field width */
+    max-height: 200px; /* Limit height */
+    overflow-y: auto; /* Make it scrollable */
+    display: none; /* Initially hidden */
+    z-index: 10; /* Ensure it appears above other elements */
+}
+
+/* Each time slot option */
+#startTimeMenu div, #endTimeMenu div {
+    padding: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+#startTimeMenu div:hover, #endTimeMenu div:hover {
+    background-color: #f1f1f1;
+}
+
+/* Ensure the dropdown appears right below the input field */
+.start-time-container, .end-time-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Ensure the input field is clickable */
+#startTimePicker, #endTimePicker {
+    cursor: pointer;
+    background-color: #fff;
+}
