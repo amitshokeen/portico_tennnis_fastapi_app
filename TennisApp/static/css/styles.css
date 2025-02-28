@@ -59,6 +59,6 @@ body {
 }
     
 .active-filter {
-        background-color: #4299e1; /* Tailwind's blue-500 */
+        background-color: #4299e1;
         color: white;
 }
