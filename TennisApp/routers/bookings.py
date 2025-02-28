@@ -8,11 +8,13 @@ from .auth import get_current_user
 from fastapi.templating import Jinja2Templates
 #from fastapi.staticfiles import StaticFiles
 from starlette.responses import RedirectResponse
-from datetime import date as DateType, datetime
+from datetime import date as DateType, datetime, timedelta, timezone
 import pytz
 
 # Set timezone for Sydney
 sydney_tz = pytz.timezone("Australia/Sydney")
+START_HOUR = 360 # minutes since midnight till 06:00
+END_HOUR =  1305 # minutes since midnight till 21:45
 
 templates = Jinja2Templates(directory="TennisApp/templates")
 
@@ -31,26 +33,47 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
-from datetime import date as DateType, datetime
-from pydantic import BaseModel, Field, field_validator
-import pytz
-
-# Set timezone for Sydney
+# Set Sydney timezone
 sydney_tz = pytz.timezone("Australia/Sydney")
 
 class BookingRequest(BaseModel):
-    #user_id: int = Field(..., description="User ID of the person making the booking")
+    user_id: int = Field(..., description="User ID of the person making the booking")
     booking_date: DateType = Field(..., alias="date", description="Booking date (YYYY-MM-DD)")
-    start_time: datetime = Field(..., description="Start time of the booking (ISO 8601 format)")
-    end_time: datetime = Field(..., description="End time of the booking (ISO 8601 format)")
+    start_time: datetime = Field(..., description="Start time of booking (ISO 8601 format, Sydney time)")
+    end_time: datetime = Field(..., description="End time of booking (ISO 8601 format, Sydney time)")
     status: str = Field(default="Confirmed", description="Booking status (Confirmed or Cancelled)")
+
+    @field_validator("start_time", "end_time", mode="before")
+    def validate_time_range(cls, value):
+        """Ensure the time range is valid and store in Sydney time."""
+        if not isinstance(value, datetime):
+            raise ValueError("Invalid datetime format for start_time or end_time.")
+
+        # Ensure the datetime is timezone-aware in Sydney time
+        try:
+            if value.tzinfo is None:
+                value = sydney_tz.localize(value, is_dst=None)  # Handle DST safely
+        except pytz.exceptions.AmbiguousTimeError:
+            raise ValueError("start_time or end_time falls during a DST change. Please select another time.")
+        
+        # Business rule: Only allow bookings between 6:00 AM and 10:00 PM Sydney time
+        local_time = value.astimezone(sydney_tz)
+        start_of_day = local_time.replace(hour=6, minute=0, second=0, microsecond=0)
+        end_of_day = local_time.replace(hour=22, minute=0, second=0, microsecond=0)
+
+        if not (start_of_day <= local_time <= end_of_day):
+            raise ValueError(f"{value.strftime('%Y-%m-%d %H:%M:%S')} must be between 6:00 AM and 10:00 PM Sydney time.")
+        
+        return value  # Store as Sydney time
 
     @field_validator("end_time")
     def validate_end_time(cls, end_time, values):
-        """Ensure end_time is after start_time."""
+        """Ensure end_time is after start_time and on the same day."""
         start_time = values.get("start_time")
         if start_time and end_time <= start_time:
             raise ValueError("End time must be after start time.")
+        if start_time and end_time.date() != start_time.date():
+            raise ValueError("Start and end times must be on the same day.")
         return end_time
 
     @field_validator("booking_date", mode="before")
@@ -60,13 +83,6 @@ class BookingRequest(BaseModel):
         if value < today:
             raise ValueError(f"Booking date cannot be in the past. Today is {today}.")
         return value
-
-    @field_validator("start_time", "end_time", mode="before")
-    def localize_datetime(cls, value):
-        """Ensure start_time and end_time are timezone-aware (Sydney timezone)."""
-        if value.tzinfo is None:
-            value = sydney_tz.localize(value)
-        return value.astimezone(sydney_tz)
 
     model_config = {
         "json_schema_extra": {
@@ -86,7 +102,7 @@ def redirect_to_login():
     return redirect_response
 
 ### Pages ###
-@router.get("/bookings-page")
+@router.get("/bookings-page", status_code=status.HTTP_200_OK)
 async def render_bookings_page(request: Request, db: db_dependency):
     try:
         user = await get_current_user(request.cookies.get('access_token')) # this will get our JWT
@@ -94,11 +110,129 @@ async def render_bookings_page(request: Request, db: db_dependency):
         if user is None:
             return redirect_to_login()
 
-        bookings = db.query(Booking).filter(Booking.user_id == user.get("id")).all()
-
-        return templates.TemplateResponse("bookings.html", {"request": request, "bookings": bookings, "user": user})
+        bookings = db.query(Booking).all()
+        
+        return templates.TemplateResponse("bookings.html", {
+            "request": request, 
+            "bookings": bookings, 
+            "user": user
+        })
+    
     except Exception as e:
         print(f"Exception occurred: {e}")
         return redirect_to_login()
     
-    # test comment
+### Endpoints ###
+def convert_to_iso8601(date_str: str) -> str:
+    """Convert 'YYYY-MM-DD' to 'YYYY-MM-DDT00:00:00+11:00' format."""
+    # Convert string to datetime object
+    naive_date = datetime.strptime(date_str, "%Y-%m-%d")
+
+    # Localize to Sydney timezone (handles daylight saving automatically)
+    localized_date = sydney_tz.localize(naive_date)
+
+    # Convert to ISO format with timezone offset
+    return localized_date.isoformat()
+
+def minutes_to_time(minutes):
+    """Convert minutes values to times"""
+    hours = minutes // 60
+    mins = minutes % 60
+    return f"{hours:02}:{mins:02}"
+
+def iso_time_to_minutes(iso_datetime: str) -> int:
+    """
+    Extracts the time part from an ISO 8601 datetime string and 
+    converts it into minutes since midnight.
+
+    Args:
+        iso_datetime (str): Datetime string in "YYYY-MM-DDTHH:MM:SS+TZ" format.
+
+    Returns:
+        int: Number of minutes elapsed from midnight.
+    """
+    # Split the string into date, time, and timezone parts
+    date_part, time_part = iso_datetime.split("T")[:2]  # Extract only date and time
+    time_only = time_part.split("+")[0].split("-")[0]  # Remove timezone offset if present
+
+    # Split time into hours, minutes, and seconds
+    hours, minutes, _ = map(int, time_only.split(":"))  # Ignore seconds
+
+    # Convert to minutes since midnight
+    return hours * 60 + minutes
+
+def get_available_start_times_formatted(aatm, bstm, betm):
+    """
+    btw, aatm means all_available_times_minutes,
+    bstm means booking_start_time_minutes,
+    betm means booking_end_time_minutes
+    """
+    # Create a set of booked minutes
+    booked_minutes = set()
+    for start, end in zip(bstm, betm):
+        booked_minutes.update(range(start, end, 15))  # Add all booked intervals
+    
+    # Generate available start times by filtering out booked minutes
+    available_start_times = [time for time in aatm if time not in booked_minutes]
+
+    # Convert back to HH:MM format for readability
+    astf = [f"{time // 60:02d}:{time % 60:02d}" for time in available_start_times]
+    return astf
+@router.post("/populate-start-times", status_code=status.HTTP_200_OK)
+async def populate_start_times(
+    user: user_dependency,
+    db: db_dependency,
+    request: dict  # Expecting JSON body with {"date": "YYYY-MM-DD"}
+):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+    
+    # Convert to ISO 8601 with Timezone Offset.
+    user_selected_date_iso = convert_to_iso8601(request.get('date'))
+    print(f"User's selected date in ISO: {user_selected_date_iso}")
+    print(f"datetime.now(sydney_tz).isoformat(timespec='seconds'): \
+{datetime.now(sydney_tz).isoformat(timespec='seconds')}")
+    
+    all_available_times_minutes = list(range(START_HOUR, END_HOUR + 1, 15))  # Every 15 minutes from 06:00 to 21:45
+    all_formatted_available_times = [minutes_to_time(m) for m in all_available_times_minutes]
+    booking_start_time_minutes = []
+    booking_end_time_minutes = []
+
+    bookings = db.query(Booking.date, Booking.start_time, Booking.end_time)\
+                        .filter(Booking.date == request.get('date'))\
+                        .all()
+    
+    for booking in bookings:
+        print(f"Date: {booking.date}, Start: {booking.start_time.isoformat()}, End: {booking.end_time.isoformat()}")
+        if booking.date.isoformat() == request.get('date'):  # Ensure it's the selected date
+            booking_start_time_minutes.append(iso_time_to_minutes(booking.start_time.isoformat()))
+            booking_end_time_minutes.append(iso_time_to_minutes(booking.end_time.isoformat()))
+
+    print(f"all_available_times_minutes: {all_available_times_minutes}")
+    print(f"booking_start_time_minutes: {booking_start_time_minutes}")
+    print(f"booking_end_time_minutes: {booking_end_time_minutes}")
+
+    available_start_times_formatted = get_available_start_times_formatted(all_available_times_minutes, booking_start_time_minutes, booking_end_time_minutes)
+
+    return {"available_start_times": available_start_times_formatted}
+
+@router.post("/populate-end-times", status_code=status.HTTP_200_OK)
+async def populate_end_times(
+    user: user_dependency,
+    db: db_dependency,
+    request: dict  # Expecting JSON body with {"date": "YYYY-MM-DD", "start_time": "16:30"}
+):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+    
+    # Convert to ISO 8601 with Timezone Offset.
+    user_selected_date_iso = convert_to_iso8601(request.get('date')) #'YYYY-MM-DD' to 'YYYY-MM-DDT00:00:00+11:00'
+    print(f"User's selected date in ISO: {user_selected_date_iso}")
+    # current time in Sydney in ISO format. E.g. 2025-02-28T11:34:07+11:00
+    print(f"datetime.now(sydney_tz).isoformat(timespec='seconds'): \
+{datetime.now(sydney_tz).isoformat(timespec='seconds')}") 
+    
+    all_available_times_minutes = list(range(START_HOUR+15, END_HOUR+15+1, 15))  # Every 15 minutes from 06:00 to 21:45
+    all_formatted_available_times = [minutes_to_time(m) for m in all_available_times_minutes]
+    
+    return {"available_end_times": all_formatted_available_times}
