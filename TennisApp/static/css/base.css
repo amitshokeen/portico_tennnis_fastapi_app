@@ -1,5 +1,5 @@
  /* Basic CSS for styling */
-body {
+ body {
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
     margin: 0;
@@ -93,4 +93,68 @@ body {
 #startTimePicker, #endTimePicker {
     cursor: pointer;
     background-color: #fff;
+}
+
+/* Positioning the hamburger on the top right */
+.hamburger-container {
+    position: fixed;
+    top: 10px;
+    right: 15px;
+    z-index: 100;
+}
+
+/* Hamburger button styling */
+.hamburger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 30px;
+    width: 40px;
+    padding: 0;
+}
+
+/* Hamburger lines - white, thick, rounded */
+.hamburger div {
+    width: 30px;
+    height: 20px; /* Increased thickness */
+    background-color: rgb(255, 255, 255); /* White color */
+    border-radius: 6px; /* Rounded edges */
+    margin: 2px 0;
+    transition: 0.3s;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 35px; /* Just below the hamburger */
+    right: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-width: 150px;
+}
+
+/* Dropdown menu links */
+.dropdown-menu a {
+    text-decoration: none;
+    color: black;
+    padding: 10px 15px;
+    display: block;
+    font-size: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f1f1f1;
+}
+
+/* Show dropdown when active */
+.dropdown-menu.active {
+    display: block;
 }
