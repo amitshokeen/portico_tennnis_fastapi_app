@@ -106,6 +106,7 @@ const formatter = new Intl.DateTimeFormat('en-CA', {
 // Date picker
 document.addEventListener("DOMContentLoaded", function () {
     const datePicker = document.getElementById("datePicker");
+    if (!datePicker) return;
     const today = new Date();
     const one_week_later = new Date();
     let user_selected_date = formatter.format(today); // yyyy-MM-dd format accepted by the browser. user_selected_date is initiated as current date.
@@ -214,6 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Hide the dropdown when clicking outside
     document.addEventListener("click", (event) => {
+        if (!startTimePicker) return;
         if (!startTimePicker.contains(event.target) && !startTimeMenu.contains(event.target)) {
             startTimeMenu.style.display = "none";
         }
@@ -302,6 +304,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Hide the dropdown when clicking outside
     document.addEventListener("click", (event) => {
+        if (!endTimePicker) return;
         if (!endTimePicker.contains(event.target) && !endTimeMenu.contains(event.target)) {
             endTimeMenu.style.display = "none";
         }
