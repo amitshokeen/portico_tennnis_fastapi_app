@@ -310,3 +310,34 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const hamburgerButton = document.getElementById("hamburgerButton");
+    const dropdownMenu = document.getElementById("dropdownMenu");
+    const logoutButton = document.getElementById("logoutButton");
+
+    // Toggle dropdown menu on hamburger click
+    hamburgerButton.addEventListener("click", () => {
+        dropdownMenu.classList.toggle("active");
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", (event) => {
+        if (!hamburgerButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+            dropdownMenu.classList.remove("active");
+        }
+    });
+
+    // Logout functionality
+    if (logoutButton) {
+        logoutButton.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent default anchor behavior
+
+            // Clear access token (logout)
+            document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            
+            // Redirect to login page
+            window.location.href = "/auth/login-page";
+        });
+    }
+});
