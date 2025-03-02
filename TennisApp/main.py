@@ -12,6 +12,10 @@ Base.metadata.create_all(bind=engine)
 
 app.mount("/static", StaticFiles(directory="TennisApp/static"), name="static")
 
+@app.get("/")
+def test(request: Request):
+    return RedirectResponse(url="/auth/login-page", status_code=status.HTTP_302_FOUND)
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
