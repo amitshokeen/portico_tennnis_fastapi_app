@@ -12,6 +12,7 @@ const loginForm = document.getElementById("loginForm");
                 payload.append(key, value);
             }
 
+            showLoading();  // Show spinner before the request
             try {
                 const response = await fetch('/auth/token', {
                     method: 'POST',
@@ -37,6 +38,8 @@ const loginForm = document.getElementById("loginForm");
             } catch (error) {
                 console.error('Error:', error);
                 alert('An error occurred. Please try again.');
+            } finally {
+                hideLoading(); // Hide spinner after fetch completes
             }
         });
     }
@@ -159,6 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
+            showLoading();  // Show spinner before the request
             // Fetch available start times from backend
             try {
                 const response = await fetch("/bookings/populate-start-times", {
@@ -184,7 +188,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 populateStartTimeMenu(data.available_start_times);
             } catch (error) {
                 console.error("Error fetching start times:", error);
-                alert("Error fetching available start times.");
+                // alert("Error fetching available start times.");
+                window.location.href = '/auth/login-page';
+            } finally {
+                hideLoading();  // Hide spinner after fetch completes
             }
         });
     }
@@ -249,6 +256,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
+            showLoading();  // Show spinner before the request
             // Fetch available end times from backend
             try {
                 const response = await fetch("/bookings/populate-end-times", {
@@ -276,7 +284,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 populateEndTimeMenu(data.available_end_times);
             } catch (error) {
                 console.error("Error fetching start times:", error);
-                alert("Error fetching available start times.");
+                //alert("Error fetching available start times.");
+                window.location.href = '/auth/login-page';
+            } finally {
+                hideLoading();  // Hide spinner after fetch completes
             }
         });
     }
@@ -311,11 +322,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+// Hamburger button
 document.addEventListener("DOMContentLoaded", function () {
     const hamburgerButton = document.getElementById("hamburgerButton");
     const dropdownMenu = document.getElementById("dropdownMenu");
     const logoutButton = document.getElementById("logoutButton");
 
+    if (!hamburgerButton) return;
     // Toggle dropdown menu on hamburger click
     hamburgerButton.addEventListener("click", () => {
         dropdownMenu.classList.toggle("active");
@@ -340,4 +353,111 @@ document.addEventListener("DOMContentLoaded", function () {
             window.location.href = "/auth/login-page";
         });
     }
+});
+
+// Function to show loading animation
+function showLoading() {
+    document.getElementById("loadingSpinner").classList.remove("hidden");
+}
+
+// Function to hide loading animation
+function hideLoading() {
+    document.getElementById("loadingSpinner").classList.add("hidden");
+}
+
+// Password Change Form
+const passwordChangeForm = document.getElementById("passwordChangeForm");
+    if (passwordChangeForm) {
+        passwordChangeForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            const passwordData = {
+                currentPassword: formData.get("currentPassword"),
+                newPassword: formData.get("newPassword")
+            }
+
+            console.log("passwordData:", JSON.stringify(passwordData))
+
+            showLoading();  // Show spinner before the request
+            try {
+                if (passwordData.newPassword.length < 6) {
+                    alert("New password must be at least 6 characters long");
+                    throw new Error("New password must be at least 6 characters long");
+                }
+                const response = await fetch('/user/change-password', {
+                    method: 'PUT',
+                    headers: {
+                        "Content-Type": 'application/json',
+                        "Authorization": `Bearer ${getToken()}`
+
+                    },
+                    body: JSON.stringify(passwordData)
+                });
+
+                if (response.ok) {
+                    // Handle success
+                    //const data = await response.json();
+                    // Delete any cookies available
+                    //logout();
+                    // Save token to cookie
+                    //document.cookie = `access_token=${data.access_token}; path=/`;
+                    alert('Password change successful');
+                    window.location.href = '/auth/login-page'; // Change this to your desired redirect page
+                } else {
+                    // Handle error
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.detail}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            } finally {
+                hideLoading(); // Hide spinner after fetch completes
+            }
+        });
+    }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#current-password');
+    const toggleNewPassword = document.querySelector('#toggleNewPassword');
+    const newPassword = document.querySelector('#new-password');
+    
+    if (!togglePassword) return;
+    if (!toggleNewPassword) return;
+    function togglePasswordVisibility(field, icon) {
+        const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+        field.setAttribute('type', type);
+        icon.classList.toggle('fa-eye-slash');
+        icon.classList.toggle('fa-eye');
+    }
+
+    togglePassword.addEventListener('click', function() {
+        togglePasswordVisibility(password, this);
+    });
+
+    toggleNewPassword.addEventListener('click', function() {
+        togglePasswordVisibility(newPassword, this);
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const togglePassword = document.querySelector('#toggleLoginPassword');
+    const password = document.querySelector('#password');
+    
+    if (!togglePassword) return;
+
+    function togglePasswordVisibility(field, icon) {
+        const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+        field.setAttribute('type', type);
+        icon.classList.toggle('fa-eye-slash');
+        icon.classList.toggle('fa-eye');
+    }
+
+    togglePassword.addEventListener('click', function() {
+        togglePasswordVisibility(password, this);
+    });
 });
