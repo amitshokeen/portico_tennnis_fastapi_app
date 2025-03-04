@@ -46,9 +46,32 @@ class Booking_old(Base):
     user = relationship("User", back_populates="bookings") 
 """
 
-def get_sydney_now_iso():
-    """Returns the current Sydney time in ISO 8601 format (YYYY-MM-DDTHH:MM:SS+TZ)."""
-    return datetime.now(sydney_tz).isoformat(timespec='seconds')
+# def get_sydney_now_iso():
+#     """Returns the current Sydney time in ISO 8601 format (YYYY-MM-DDTHH:MM:SS+TZ)."""
+#     return datetime.now(sydney_tz).isoformat(timespec='seconds')
+
+# class Booking(Base):
+#     __tablename__ = 'bookings'
+
+#     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+#     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+#     date = Column(Date, nullable=False)  # Booking date
+    
+#     # Ensure times are stored in Sydney time (with DST support)
+#     start_time = Column(DateTime(timezone=True), nullable=False)  # Sydney start of booking
+#     end_time = Column(DateTime(timezone=True), nullable=False)  # Sydney end of booking
+    
+#     created_at = Column(DateTime(timezone=True), default=get_sydney_now_iso)  # ISO 8601 Timestamp in Sydney time
+#     status = Column(String(20), default="Confirmed")  # Can be "Confirmed", "Cancelled"
+
+#     # Relationship with User (Many-to-One)
+#     # e.g. If you query a booking, you can access its user with booking.user.username.
+#     user = relationship("User", back_populates="bookings")
+
+def get_sydney_now():
+    """Returns current time in Sydney with timezone info."""
+    return datetime.now(sydney_tz)
 
 class Booking(Base):
     __tablename__ = 'bookings'
@@ -56,15 +79,13 @@ class Booking(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
-    date = Column(Date, nullable=False)  # Booking date
-    
-    # Ensure times are stored in Sydney time (with DST support)
-    start_time = Column(DateTime(timezone=True), nullable=False)  # Sydney start of booking
-    end_time = Column(DateTime(timezone=True), nullable=False)  # Sydney end of booking
-    
-    created_at = Column(DateTime(timezone=True), default=get_sydney_now_iso)  # ISO 8601 Timestamp in Sydney time
-    status = Column(String(20), default="Confirmed")  # Can be "Confirmed", "Cancelled"
+    date = Column(Date, nullable=False)  # Booking date (stored as Date)
 
-    # Relationship with User (Many-to-One)
-    # e.g. If you query a booking, you can access its user with booking.user.username.
-    user = relationship("User", back_populates="bookings")
+    start_time = Column(DateTime(timezone=True), nullable=False)  # Stored as proper DateTime
+    end_time = Column(DateTime(timezone=True), nullable=False)  # Stored as proper DateTime
+
+    created_at = Column(DateTime(timezone=True), default=get_sydney_now)  # Timestamp of booking in Sydney time
+    status = Column(String(20), default="Confirmed")  # Status of booking
+
+    # Relationship with User
+    user = relationship("User", back_populates="bookings")  
