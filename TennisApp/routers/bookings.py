@@ -1,6 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Path, status, Request
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from sqlalchemy.orm import Session
 from ..database import SessionLocal
 from ..models import Booking
@@ -37,7 +37,7 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 sydney_tz = pytz.timezone("Australia/Sydney")
 
 class BookingRequest(BaseModel):
-    user_id: int = Field(..., description="User ID of the person making the booking")
+    #user_id: int = Field(..., description="User ID of the person making the booking")
     booking_date: DateType = Field(..., alias="date", description="Booking date (YYYY-MM-DD)")
     start_time: datetime = Field(..., description="Start time of booking (ISO 8601 format, Sydney time)")
     end_time: datetime = Field(..., description="End time of booking (ISO 8601 format, Sydney time)")
@@ -46,39 +46,39 @@ class BookingRequest(BaseModel):
     @field_validator("start_time", "end_time", mode="before")
     def validate_time_range(cls, value):
         """Ensure the time range is valid and store in Sydney time."""
-        if not isinstance(value, datetime):
-            raise ValueError("Invalid datetime format for start_time or end_time.")
+        if isinstance(value, str):  # Convert string to datetime
+            try:
+                value = datetime.fromisoformat(value)  # Converts ISO 8601 string to datetime
+            except ValueError:
+                raise ValueError("Invalid datetime format for start_time or end_time.")
 
-        # Ensure the datetime is timezone-aware in Sydney time
-        try:
-            if value.tzinfo is None:
-                value = sydney_tz.localize(value, is_dst=None)  # Handle DST safely
-        except pytz.exceptions.AmbiguousTimeError:
-            raise ValueError("start_time or end_time falls during a DST change. Please select another time.")
-        
-        # Business rule: Only allow bookings between 6:00 AM and 10:00 PM Sydney time
-        local_time = value.astimezone(sydney_tz)
-        start_of_day = local_time.replace(hour=6, minute=0, second=0, microsecond=0)
-        end_of_day = local_time.replace(hour=22, minute=0, second=0, microsecond=0)
+        if value.tzinfo is None:
+            value = sydney_tz.localize(value, is_dst=None)  # Ensure it's timezone-aware
 
-        if not (start_of_day <= local_time <= end_of_day):
-            raise ValueError(f"{value.strftime('%Y-%m-%d %H:%M:%S')} must be between 6:00 AM and 10:00 PM Sydney time.")
-        
         return value  # Store as Sydney time
 
     @field_validator("end_time")
-    def validate_end_time(cls, end_time, values):
+    def validate_end_time(cls, end_time, values: ValidationInfo):
         """Ensure end_time is after start_time and on the same day."""
-        start_time = values.get("start_time")
+        start_time = values.data.get("start_time")  # Access values correctly in Pydantic v2
+
         if start_time and end_time <= start_time:
             raise ValueError("End time must be after start time.")
+
         if start_time and end_time.date() != start_time.date():
             raise ValueError("Start and end times must be on the same day.")
-        return end_time
 
+        return end_time
+    
     @field_validator("booking_date", mode="before")
     def validate_booking_date(cls, value):
         """Ensure the booking date is not in the past."""
+        try:
+            if isinstance(value, str):  # Convert string to date
+                value = datetime.strptime(value, "%Y-%m-%d").date()
+        except ValueError:
+            raise ValueError(f"Invalid date format: {value}. Expected format: YYYY-MM-DD")
+        
         today = DateType.today()
         if value < today:
             raise ValueError(f"Booking date cannot be in the past. Today is {today}.")
@@ -313,3 +313,60 @@ async def populate_start_times(
     available_start_times_formatted = get_available_start_times_formatted(all_available_times_minutes, booking_start_time_minutes, booking_end_time_minutes)
 
     return {"available_start_times": available_start_times_formatted}
+
+@router.post("/confirm-booking", status_code=status.HTTP_201_CREATED)
+async def confirm_booking(
+    user: user_dependency,
+    db: db_dependency,
+    request_data: dict  # e.g. {"user_id":"2025-03-04", "start_time":"2025-03-04T15:00:00+11:00", "end_time":"2025-03-04T16:00:00+11:00"}
+):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+
+    user_id = user["id"]
+    booking_date_str = request_data["date"]
+    start_time_str = request_data["start_time"]
+    end_time_str = request_data["end_time"]
+    status = request_data.get("status", "Confirmed")
+
+    # Convert to Python date and datetime objects
+    try:
+        booking_date = datetime.strptime(booking_date_str, "%Y-%m-%d").date()  # Convert date string
+        start_time = datetime.fromisoformat(start_time_str)  # Convert ISO string to datetime
+        end_time = datetime.fromisoformat(end_time_str)  # Convert ISO string to datetime
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date/time format: {e}")
+
+    # Ensure the datetime objects are timezone-aware
+    if start_time.tzinfo is None:
+        start_time = sydney_tz.localize(start_time)
+    if end_time.tzinfo is None:
+        end_time = sydney_tz.localize(end_time)
+
+    # Validate if booking overlaps with an existing one
+    overlapping_booking = db.query(Booking).filter(
+        Booking.date == booking_date,
+        Booking.start_time < end_time,
+        Booking.end_time > start_time
+    ).first()
+
+    if overlapping_booking:
+        raise HTTPException(status_code=409, detail="Time slot is already booked.")
+
+    # Insert into database
+    new_booking = Booking(
+        user_id=user_id,
+        date=booking_date,
+        start_time=start_time,  # Now a proper datetime object
+        end_time=end_time,  # Now a proper datetime object
+        status=status
+    )
+
+    db.add(new_booking)
+    db.commit()
+    db.refresh(new_booking)
+
+    # Fetch all bookings to return to frontend
+    all_bookings = db.query(Booking).all()
+
+    return {"message": "Booking confirmed", "bookings": all_bookings}
