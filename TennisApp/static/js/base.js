@@ -1,49 +1,50 @@
 // Login Form
 const loginForm = document.getElementById("loginForm");
-    if (loginForm) {
-        loginForm.addEventListener('submit', async function (event) {
-            event.preventDefault();
+if (loginForm) {
+    loginForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
 
-            const form = event.target;
-            const formData = new FormData(form);
+        const form = event.target;
+        const formData = new FormData(form);
 
-            const payload = new URLSearchParams();
-            for (const [key, value] of formData.entries()) {
-                payload.append(key, value);
+        const payload = new URLSearchParams();
+        for (const [key, value] of formData.entries()) {
+            payload.append(key, value);
+        }
+
+        showLoading();  // Show spinner before the request
+        try {
+            const response = await fetch('/auth/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: payload.toString()
+            });
+
+            if (response.ok) {
+                // Handle success (e.g., redirect to dashboard)
+                const data = await response.json();
+                // Delete any cookies available
+                logout();
+                // Save token to cookie
+                document.cookie = `access_token=${data.access_token}; path=/`;
+                window.location.href = '/bookings/bookings-page'; // Change this to your desired redirect page
+            } else {
+                // Handle error
+                const errorData = await response.json();
+                alert(`Error: ${errorData.detail}`);
             }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            hideLoading(); // Hide spinner after fetch completes
+        }
+    });
+}
 
-            showLoading();  // Show spinner before the request
-            try {
-                const response = await fetch('/auth/token', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: payload.toString()
-                });
-
-                if (response.ok) {
-                    // Handle success (e.g., redirect to dashboard)
-                    const data = await response.json();
-                    // Delete any cookies available
-                    logout();
-                    // Save token to cookie
-                    document.cookie = `access_token=${data.access_token}; path=/`;
-                    window.location.href = '/bookings/bookings-page'; // Change this to your desired redirect page
-                } else {
-                    // Handle error
-                    const errorData = await response.json();
-                    alert(`Error: ${errorData.detail}`);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            } finally {
-                hideLoading(); // Hide spinner after fetch completes
-            }
-        });
-    }
-
+// Registeration form
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
     registerForm.addEventListener('submit', function(event) {
@@ -74,6 +75,7 @@ if (registerForm) {
     });
 }
 
+// Logout form
 function logout() {
     // Get all cookies
     const cookies = document.cookie.split(";");
@@ -420,6 +422,7 @@ const passwordChangeForm = document.getElementById("passwordChangeForm");
         });
     }
 
+// password toggle - fa-eye
 document.addEventListener('DOMContentLoaded', function() {
     const togglePassword = document.querySelector('#togglePassword');
     const password = document.querySelector('#current-password');
@@ -444,6 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// password toggle - fa-eye
 document.addEventListener('DOMContentLoaded', function() {
     const togglePassword = document.querySelector('#toggleLoginPassword');
     const password = document.querySelector('#password');
@@ -461,3 +465,5 @@ document.addEventListener('DOMContentLoaded', function() {
         togglePasswordVisibility(password, this);
     });
 });
+
+
