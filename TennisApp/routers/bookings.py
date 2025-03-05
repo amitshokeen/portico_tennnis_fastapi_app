@@ -2,13 +2,16 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Path, status, Request
 from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from sqlalchemy.orm import Session
+from sqlalchemy import asc
 from ..database import SessionLocal
-from ..models import Booking
+from ..models import Booking, User
 from .auth import get_current_user
 from fastapi.templating import Jinja2Templates
 #from fastapi.staticfiles import StaticFiles
 from starlette.responses import RedirectResponse
 from datetime import date as DateType, datetime, timedelta, timezone
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 import pytz
 
 # Set timezone for Sydney
@@ -105,23 +108,46 @@ def redirect_to_login():
 @router.get("/bookings-page", status_code=status.HTTP_200_OK)
 async def render_bookings_page(request: Request, db: db_dependency):
     try:
-        user = await get_current_user(request.cookies.get('access_token')) # this will get our JWT
-        #print(f"***** user *****: {user}")
+        user = await get_current_user(request.cookies.get('access_token'))
         if user is None:
             return redirect_to_login()
 
-        bookings = db.query(Booking).all()
-        
+        # Get the current date
+        current_date = datetime.now(sydney_tz).date()
+
+        # Query bookings, joining with User table and ordering by date and start time
+        all_bookings = (
+            db.query(Booking, User.username)
+            .join(User, Booking.user_id == User.id)
+            .filter(Booking.date >= current_date)
+            .order_by(asc(Booking.date), asc(Booking.start_time))
+            .all()
+        )
+
+        # Serialize the bookings
+        serialized_bookings = [
+            {
+                "id": booking.id,
+                "user_id": booking.user_id,
+                "date": booking.date.isoformat(),
+                "start_time": booking.start_time.isoformat(),
+                "end_time": booking.end_time.isoformat(),
+                "status": booking.status,
+                "username": username
+            }
+            for booking, username in all_bookings
+        ]
+
         return templates.TemplateResponse("bookings.html", {
             "request": request, 
-            "bookings": bookings, 
+            "bookings": serialized_bookings, 
             "user": user
         })
     
     except Exception as e:
         print(f"Exception occurred: {e}")
         return redirect_to_login()
-    
+
 ### Endpoints ###
 def convert_to_iso8601(date_str: str) -> str:
     """Convert 'YYYY-MM-DD' to 'YYYY-MM-DDT00:00:00+11:00' format."""
@@ -362,11 +388,36 @@ async def confirm_booking(
         status=status
     )
 
+    # Get the current date
+    current_date = datetime.now(sydney_tz).date()
+
+    # Delete all bookings with dates earlier than the current date
+    db.query(Booking).filter(Booking.date < current_date).delete(synchronize_session=False)
+    db.commit()
+
     db.add(new_booking)
     db.commit()
     db.refresh(new_booking)
 
-    # Fetch all bookings to return to frontend
-    all_bookings = db.query(Booking).all()
+    all_bookings = (
+        db.query(Booking, User.username)
+        .join(User, Booking.user_id == User.id)
+        .order_by(asc(Booking.date), asc(Booking.start_time))
+        .all()
+    )
 
-    return {"message": "Booking confirmed", "bookings": all_bookings}
+    serialized_bookings = [
+        {
+            "id": booking.id,
+            "user_id": booking.user_id,
+            "date": booking.date.isoformat(),
+            "start_time": booking.start_time.isoformat(),
+            "end_time": booking.end_time.isoformat(),
+            "status": booking.status,
+            "username": username
+        }
+        for booking, username in all_bookings
+    ]
+
+    return JSONResponse(content={"message": "Booking confirmed", "bookings": serialized_bookings})
+
