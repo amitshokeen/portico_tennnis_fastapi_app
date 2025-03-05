@@ -1,20 +1,29 @@
 {% include 'layout.html' %}
 {% include 'navbar.html' %}
-<div class="container">
-    <h2>Portico Tennis Court Bookings</h2>
-    <!--<label class="">Select a Date:</label>-->
-        <div id="datePickerContainer">
-            <input type="date" id="datePicker" class="" required>
-        </div>
-        <div class="start-time-container">
-            <input type="text" id="startTimePicker" class="" placeholder="Pick a start time" readonly>
-            <div class="" id="startTimeMenu"></div>
-        </div>
-        <div class="end-time-container">
-            <input type="text" id="endTimePicker" class="" placeholder="Pick an end time" readonly>
-            <div class="" id="endTimeMenu"></div>
-        </div>
-        <button id="confirmEndTime" class="">Confirm Booking</button>
-        <div id="loadingSpinner" class="loading-spinner hidden"></div>
+<div class="containers-wrapper">
+    <div class="container">
+        <h2>Portico Tennis Court</h2>
+        <!--<label class="">Select a Date:</label>-->
+            <div id="datePickerContainer">
+                <input type="date" id="datePicker" class="" required>
+            </div>
+            <div class="start-time-container">
+                <input type="text" id="startTimePicker" class="" placeholder="Pick a start time" readonly>
+                <div class="" id="startTimeMenu"></div>
+            </div>
+            <div class="end-time-container">
+                <input type="text" id="endTimePicker" class="" placeholder="Pick an end time" readonly>
+                <div class="" id="endTimeMenu"></div>
+            </div>
+            <button type="submit" id="confirmEndTime" class="">Confirm Booking</button>
+            <div id="loadingSpinner" class="loading-spinner hidden"></div>
+    </div>
+    <div class="container">
+        <h2>Bookings</h2>
+            <div id="bookingsContainer"></div>
+    </div>
 </div>
 
+<script>
+    const bookingsData = {{ bookings | tojson | safe }};
+</script>
