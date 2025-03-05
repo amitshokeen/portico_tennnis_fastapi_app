@@ -628,3 +628,19 @@ function updateBookingsList(bookings) {
         bookingsContainer.appendChild(bookingElement);
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const dashboardLink = document.getElementById('dashboard');
+    if (dashboardLink) {
+        dashboardLink.addEventListener('click', handleDashboardClick);
+    }
+});
+
+function handleDashboardClick(event) {
+    event.preventDefault();
+    if (window.location.pathname === '/bookings/bookings-page') {
+        window.location.reload();
+    } else {
+        window.location.href = '/bookings/bookings-page';
+    }
+}
