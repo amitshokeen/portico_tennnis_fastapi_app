@@ -1,0 +1,86 @@
+{% include 'layout.html' %}
+{% include 'navbar.html' %}
+<div class="container">
+    <h2>Cancel Booking</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Date</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <!--<th>Status</th>-->
+            </tr>
+        </thead>
+        <tbody id="bookingsTable">
+            {% for booking in bookings %}
+            <tr data-booking-id="{{ booking.id }}">
+                <td>
+                    <span class="cancel-checkbox" onclick="toggleCancel(this, {{ booking.id }})">☐</span>
+                </td>
+                <td>{{ booking.date }}</td>
+                <td>{{ booking.start_time[11:16] }}</td> <!-- Extract HH:MM -->
+                <td>{{ booking.end_time[11:16] }}</td> <!-- Extract HH:MM -->
+                <!--<td>{{ booking.status }}</td>-->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button id="submitCancellations" class="submit-cancel-button" onclick="submitCancellations()">Submit Cancellations</button>
+</div>
+
+<script>
+    let selectedBookings = [];
+
+    function toggleCancel(element, bookingId) {
+        if (selectedBookings.includes(bookingId)) {
+            // Remove from the list and reset UI
+            selectedBookings = selectedBookings.filter(id => id !== bookingId);
+            element.textContent = "☐";  // Checkbox unchecked
+            element.classList.remove("selected");
+        } else {
+            // Add to the list and mark for cancellation
+            selectedBookings.push(bookingId);
+            element.textContent = "❌";  // Red X
+            element.classList.add("selected");
+        }
+    }
+
+    function submitCancellations() {
+        if (selectedBookings.length === 0) {
+            alert("Please select at least one booking to cancel.");
+            return;
+        }
+
+        if (!confirm("Are you sure you want to cancel the selected bookings?")) {
+             return;
+        }
+
+        fetch("/bookings/cancel-multiple", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${getToken()}`
+            },
+            body: JSON.stringify({ booking_ids: selectedBookings }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Failed to cancel bookings.");
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert("Bookings canceled successfully!");
+            selectedBookings.forEach(id => {
+                document.querySelector(`tr[data-booking-id="${id}"]`).remove();
+            });
+            selectedBookings = []; // Reset selection
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error canceling bookings.");
+        });
+    }
+</script>
