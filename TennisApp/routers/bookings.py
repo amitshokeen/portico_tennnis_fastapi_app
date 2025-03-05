@@ -13,6 +13,7 @@ from datetime import date as DateType, datetime, timedelta, timezone
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 import pytz
+from typing import List
 
 # Set timezone for Sydney
 sydney_tz = pytz.timezone("Australia/Sydney")
@@ -144,6 +145,42 @@ async def render_bookings_page(request: Request, db: db_dependency):
             "user": user
         })
     
+    except Exception as e:
+        print(f"Exception occurred: {e}")
+        return redirect_to_login()
+
+@router.get("/cancel-booking", status_code=status.HTTP_200_OK)
+async def render_cancel_booking_page(request: Request, db: db_dependency):
+    try:
+        user = await get_current_user(request.cookies.get('access_token'))
+        if user is None:
+            return redirect_to_login()
+        
+        user_id = user["id"]
+        
+        user_bookings = (
+            db.query(Booking)
+            .filter(Booking.user_id == user_id)
+            .order_by(asc(Booking.date), asc(Booking.start_time))
+            .all()
+        )
+
+        serialized_bookings = [
+            {
+                "id": booking.id,
+                "date": booking.date.isoformat(),
+                "start_time": booking.start_time.isoformat(),
+                "end_time": booking.end_time.isoformat(),
+                "status": booking.status,
+            }
+            for booking in user_bookings
+        ]
+
+        return templates.TemplateResponse(
+            "cancel-booking.html",
+            {"request": request, "bookings": serialized_bookings, "user": user}
+        )
+
     except Exception as e:
         print(f"Exception occurred: {e}")
         return redirect_to_login()
@@ -420,4 +457,37 @@ async def confirm_booking(
     ]
 
     return JSONResponse(content={"message": "Booking confirmed", "bookings": serialized_bookings})
+
+class CancelBookingRequest(BaseModel):
+    booking_ids: List[int]
+
+@router.delete("/cancel-multiple", status_code=status.HTTP_200_OK)
+async def cancel_multiple_bookings(
+    request_data: CancelBookingRequest,
+    user: user_dependency,
+    db: db_dependency
+):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+
+    user_id = user["id"]  # Extract logged-in user ID
+
+    # Find bookings that belong to the user
+    bookings = db.query(Booking).filter(
+        Booking.id.in_(request_data.booking_ids),
+        Booking.user_id == user_id
+    ).all()
+
+    if not bookings:
+        raise HTTPException(
+            status_code=404, detail="No valid bookings found to cancel."
+        )
+
+    # Delete bookings
+    for booking in bookings:
+        db.delete(booking)
+
+    db.commit()
+
+    return {"message": "Bookings canceled successfully"}
 
