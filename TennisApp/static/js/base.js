@@ -466,4 +466,165 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Confirm Booking
+document.addEventListener("DOMContentLoaded", function () {
+    const confirmBookingButton = document.getElementById("confirmEndTime");
+    const datePicker = document.getElementById("datePicker");
+    const startTimePicker = document.getElementById("startTimePicker");
+    const endTimePicker = document.getElementById("endTimePicker");
 
+    if (!confirmBookingButton) return;
+
+    confirmBookingButton.addEventListener("click", async function (event) {
+        event.preventDefault();
+
+        // Extract values from form
+        const selectedDate = datePicker.value;
+        const selectedStartTime = startTimePicker.value;
+        const selectedEndTime = endTimePicker.value;
+
+        if (!selectedDate || !selectedStartTime || !selectedEndTime) {
+            alert("Please select a date, start time, and end time before confirming.");
+            return;
+        }
+
+        const startTimeISO = convertToISO(selectedDate, selectedStartTime);
+        const endTimeISO = convertToISO(selectedDate, selectedEndTime);
+
+        // Retrieve user_id from token
+        const token = getToken();
+        if (!token) {
+            alert("Authentication error. Please log in again.");
+            window.location.href = "/auth/login-page";
+            return;
+        }
+
+        let user_id;
+        try {
+            const payload = JSON.parse(atob(token.split(".")[1])); // Decode JWT payload
+            user_id = payload.id;
+        } catch (error) {
+            console.error("Error decoding token:", error);
+            alert("Invalid session. Please log in again.");
+            window.location.href = "/auth/login-page";
+            return;
+        }
+
+        // Prepare request payload
+        const requestBody = {
+            user_id: user_id,
+            date: selectedDate,
+            start_time: startTimeISO,
+            end_time: endTimeISO,
+            status: "Confirmed"
+        };
+
+        console.log("Confirming Booking:", requestBody);
+
+        showLoading(); // Show spinner before request
+
+        try {
+            const response = await fetch("/bookings/confirm-booking", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            // Log the full response object to inspect it in detail
+            console.log("Network Response:", response);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Failed to confirm booking.");
+            }
+
+            const data = await response.json();
+            //console.log("Booking Confirmed:", data);
+            console.log("Bookings Array:", data.bookings);
+            console.log("0: user_id:", data.bookings[0].user_id);
+            console.log("0: date:", data.bookings[0].date);
+            console.log("0: start_time:", data.bookings[0].start_time);
+            console.log("0: end_time:", data.bookings[0].end_time);
+            console.log("0: status:", data.bookings[0].status);
+            console.log("1: start_time:", data.bookings[1].start_time);
+            //console.log("first value from Bookings Array:", data.bookings[0].end_time);
+            //console.log("Typeof bookings array:", typeof(data.bookings));
+
+            //alert("Booking confirmed successfully!");
+            document.getElementById("startTimePicker").value = "";
+            document.getElementById("endTimePicker").value = "";
+            updateBookingsList(data.bookings);
+
+        } catch (error) {
+            console.error("Error confirming booking:", error);
+            alert(error.message);
+        } finally {
+            hideLoading(); // Hide spinner after request
+        }
+    });
+});
+
+// Convert date and time to ISO 8601 format with correct Sydney timezone offset
+function convertToISO(date, time) {
+    // Create a date object from selected date & time
+    const dateTime = new Date(`${date}T${time}:00`);
+
+    // Get Sydney timezone offset dynamically
+    const sydneyTimeZone = "Australia/Sydney";
+    const formatter = new Intl.DateTimeFormat("en-AU", {
+        timeZone: sydneyTimeZone,
+        timeZoneName: "longOffset"
+    });
+    
+    const parts = formatter.formatToParts(dateTime);
+    const offsetPart = parts.find(part => part.type === "timeZoneName").value;
+    
+    // Extract offset in "+HH:MM" format
+    const offsetMatch = offsetPart.match(/GMT([+-]\d{2}):(\d{2})/);
+    const formattedOffset = offsetMatch ? `${offsetMatch[1]}:${offsetMatch[2]}` : "+00:00";
+
+    return `${date}T${time}:00${formattedOffset}`;
+}
+
+// Update the bookings container with the bookings
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof bookingsData !== 'undefined') {
+        updateBookingsList(bookingsData);
+    }
+});
+function updateBookingsList(bookings) {
+    const bookingsContainer = document.getElementById("bookingsContainer");
+    if (!bookingsContainer) return;
+
+    // Clear previous bookings
+    bookingsContainer.innerHTML = "";
+
+    // Create table header
+    const tableHeader = document.createElement("div");
+    tableHeader.className = "booking-header";
+    tableHeader.innerHTML = `
+        <span class="booking-column">User</span>
+        <span class="booking-column">Date</span>
+        <span class="booking-column">Time</span>
+    `;
+    bookingsContainer.appendChild(tableHeader);
+
+    // Render the updated bookings
+    bookings.forEach(booking => {
+        const bookingElement = document.createElement("div");
+        bookingElement.className = "booking-row";
+        
+        const startTime = booking.start_time.split('T')[1].split(':').slice(0, 2).join(':');
+        const endTime = booking.end_time.split('T')[1].split(':').slice(0, 2).join(':');
+        
+        bookingElement.innerHTML = `
+            <span class="booking-column">${booking.username}</span>
+            <span class="booking-column">${booking.date}</span>
+            <span class="booking-column">${startTime} - ${endTime}</span>
+        `;
+        bookingsContainer.appendChild(bookingElement);
+    });
+}
