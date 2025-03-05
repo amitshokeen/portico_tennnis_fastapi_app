@@ -3,17 +3,26 @@
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
     margin: 0;
-    padding: 0;
+    padding: 20px 0; /* Add some vertical padding */
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh; /* Use min-height instead of height */
     background-image: url('../images/tennis_court.png');
-    background-size: cover; /* Ensures the image covers the whole screen */
-    background-position: center; /* Centers the image */
-    background-repeat: no-repeat; /* Prevents the image from repeating */
-    background-attachment: fixed; /* Keeps the image fixed when scrolling */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
+
+/* New wrapper for containers */
+.containers-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; /* This creates space between the containers */
+}
+
 
 .container {
     background-color: white;
@@ -22,6 +31,7 @@
     border-radius: 10px;
     width: 300px;
     text-align: center;
+    margin: 10px 0; /* Add vertical margin */
 }
 
 .container h2 {
@@ -197,3 +207,51 @@
     cursor: pointer;
 }
 
+#bookingsContainer {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.booking-header, .booking-row {
+    display: flex;
+    padding: 10px;
+}
+
+.booking-header {
+    background-color: #e0e0e0; /* Slightly darker header */
+    font-weight: bold;
+}
+
+.booking-row:nth-child(odd) {
+    background-color: #ededed; /* Light gray for odd rows */
+}
+
+.booking-row:nth-child(even) {
+    background-color: #ffffff; /* White for even rows */
+}
+
+.booking-column {
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Adjust the flex ratios for different columns */
+.booking-column:nth-child(1) { /* User column */
+    flex: 0 0 60px; /* Fixed width of 60px */
+}
+
+.booking-column:nth-child(2) { /* Date column */
+    flex: 1; /* Takes up remaining space */
+}
+
+.booking-column:nth-child(3) { /* Time column */
+    flex: 1; /* Takes up remaining space */
+}
+
+/* Add hover effect for better interactivity */
+.booking-row:hover {
+    background-color: #f0f0f0; /* Light gray on hover */
+}
