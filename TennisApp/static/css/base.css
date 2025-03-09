@@ -281,3 +281,74 @@
 .submit-cancel-button:hover {
     background-color: #cc0000;
 }
+
+/* Forgot Password specific styles */
+#forgotPasswordForm input[type="email"] {
+    width: 93%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#forgotPasswordForm button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#forgotPasswordForm button:hover {
+    background-color: #0056b3;
+}
+
+.success-message {
+    color: green;
+    margin-top: 10px;
+}
+
+.links {
+    margin-top: 15px;
+}
+
+.links a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+  
+  .back-arrow {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    border-left: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    margin-right: 0.5em;
+    transition: transform 0.3s ease;
+  }
+  
+  .back-link:hover, .back-link:focus {
+    color: #0056b3;
+  }
+  
+  .back-link:hover .back-arrow, .back-link:focus .back-arrow {
+    transform: rotate(45deg) translate(-2px, -2px);
+  }
+  
