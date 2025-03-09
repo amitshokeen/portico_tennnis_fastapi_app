@@ -16,10 +16,12 @@ class User(Base):
     first_name = Column(String)
     last_name = Column(String)
     hashed_password = Column(String(255), nullable=False)
-    is_active = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=False)
     role = Column(String(20), default="resident") # to cater for roles like 'admin' etc.
     phone_number = Column(String(15), nullable=True)
     apartment_number = Column(String(4), unique=True, nullable=True) # e.g. 'a202', 'b104', 'c304', 'd203'
+    failed_login_attempts = Column(Integer, default=0)
+    last_failed_login = Column(DateTime(timezone=True))
     
     # Relationship with bookings
     bookings = relationship("Booking", back_populates="user", cascade="all, delete-orphan")
@@ -46,29 +48,6 @@ class Booking_old(Base):
     user = relationship("User", back_populates="bookings") 
 """
 
-# def get_sydney_now_iso():
-#     """Returns the current Sydney time in ISO 8601 format (YYYY-MM-DDTHH:MM:SS+TZ)."""
-#     return datetime.now(sydney_tz).isoformat(timespec='seconds')
-
-# class Booking(Base):
-#     __tablename__ = 'bookings'
-
-#     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-#     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-
-#     date = Column(Date, nullable=False)  # Booking date
-    
-#     # Ensure times are stored in Sydney time (with DST support)
-#     start_time = Column(DateTime(timezone=True), nullable=False)  # Sydney start of booking
-#     end_time = Column(DateTime(timezone=True), nullable=False)  # Sydney end of booking
-    
-#     created_at = Column(DateTime(timezone=True), default=get_sydney_now_iso)  # ISO 8601 Timestamp in Sydney time
-#     status = Column(String(20), default="Confirmed")  # Can be "Confirmed", "Cancelled"
-
-#     # Relationship with User (Many-to-One)
-#     # e.g. If you query a booking, you can access its user with booking.user.username.
-#     user = relationship("User", back_populates="bookings")
-
 def get_sydney_now():
     """Returns current time in Sydney with timezone info."""
     return datetime.now(sydney_tz)
@@ -89,3 +68,11 @@ class Booking(Base):
 
     # Relationship with User
     user = relationship("User", back_populates="bookings")  
+
+class PasswordReset(Base):
+    __tablename__ = "password_resets"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    token = Column(String, unique=True, nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False, default=get_sydney_now)
