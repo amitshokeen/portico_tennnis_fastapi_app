@@ -543,13 +543,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const data = await response.json();
             //console.log("Booking Confirmed:", data);
-            console.log("Bookings Array:", data.bookings);
-            console.log("0: user_id:", data.bookings[0].user_id);
-            console.log("0: date:", data.bookings[0].date);
-            console.log("0: start_time:", data.bookings[0].start_time);
-            console.log("0: end_time:", data.bookings[0].end_time);
-            console.log("0: status:", data.bookings[0].status);
-            console.log("1: start_time:", data.bookings[1].start_time);
+            // console.log("Bookings Array:", data.bookings);
+            // console.log("0: user_id:", data.bookings[0].user_id);
+            // console.log("0: date:", data.bookings[0].date);
+            // console.log("0: start_time:", data.bookings[0].start_time);
+            // console.log("0: end_time:", data.bookings[0].end_time);
+            // console.log("0: status:", data.bookings[0].status);
+            // console.log("1: start_time:", data.bookings[1].start_time);
             //console.log("first value from Bookings Array:", data.bookings[0].end_time);
             //console.log("Typeof bookings array:", typeof(data.bookings));
 
