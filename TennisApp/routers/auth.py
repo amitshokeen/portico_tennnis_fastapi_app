@@ -1,6 +1,7 @@
 from datetime import timedelta, datetime, timezone
-from fastapi import APIRouter, Depends, status, HTTPException, Request
-from pydantic import BaseModel, EmailStr
+from fastapi import APIRouter, Depends, status, HTTPException, Request, Response
+from fastapi.security import APIKeyHeader
+from pydantic import BaseModel, EmailStr, StringConstraints, field_validator, Field
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from ..models import User
 from ..config import settings
@@ -11,7 +12,12 @@ from ..database import SessionLocal
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 from fastapi.templating import Jinja2Templates
+from dotenv import load_dotenv
+import os
 import pytz
+import time
+
+load_dotenv()
 
 sydney_tz = pytz.timezone("Australia/Sydney")
 
@@ -22,8 +28,11 @@ router = APIRouter(
 
 ##### change the SECRET_KEY value. Use a secrets manager like AWS Secrets Manager when deploying to production.
 ##### add the secrets file to .gitignore
-SECRET_KEY = '9d8fb39136049682393c984524b246282d0999f1f4cbeebf03786535485a09f0'
-ALGORITHM = 'HS256'
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+
+if not SECRET_KEY or not ALGORITHM:
+    raise ValueError("SECRET_KEY and ALGORITHM must be set in the .env file")
 
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
@@ -150,13 +159,69 @@ async def login_for_access_token(
     
 class UserCreate(BaseModel):
     email: EmailStr
-    username: str
-    first_name: str
-    last_name: str
+    username: Annotated[str, StringConstraints(min_length=3, max_length=5)]
+    first_name: Annotated[str, StringConstraints(min_length=1, max_length=50)]
+    last_name: Annotated[str, StringConstraints(min_length=1, max_length=50)]
     role: str
     apartment_number: str
-    phone_number: str
+    phone_number: str = Field(
+        pattern=r"^(?:\+61|0)4\d{8}$", # Regex for Australian mobile numbers
+        description="Australian phone number starting with +61 or 04"
+    )
     password: str
+
+    @field_validator('username')
+    def validate_username(cls, v):
+        if len(v) < 3 or len(v) > 5:
+            raise ValueError('Username must be between 3 and 5 characters long')
+        return v
+    
+    @field_validator('first_name')
+    def validate_first_name(cls, v):
+        if len(v) < 1 or len(v) > 50:
+            raise ValueError('First Name must be between 1 and 50 characters long')
+        return v
+    
+    @field_validator('last_name')
+    def validate_last_name(cls, v):
+        if len(v) < 1 or len(v) > 50:
+            raise ValueError('Last Name must be between 1 and 50 characters long')
+        return v
+    
+    @field_validator('role')
+    def validate_role(cls, v):
+        allowed_roles = ['resident', 'admin']
+        if v.lower() not in allowed_roles:
+            raise ValueError('Invalid role')
+        return v.lower()
+
+RATE_LIMIT = 5 # max number of requests
+TIME_WINDOW = 60 # Time window in seconds
+
+# Dict to store request counts and timestamps per client
+request_counters = {}
+
+async def rate_limit(request: Request):
+    client_ip = request.client.host # client IP is the identifier here
+    current_time = time.time()
+
+    # Initialize or update request counter for the client IP
+    if client_ip not in request_counters:
+        request_counters[client_ip] = {"count": 1, "start_time": current_time}
+    else:
+        data = request_counters[client_ip]
+        elapsed_time = current_time - data["start_time"]
+
+        if elapsed_time > TIME_WINDOW:
+            # Reset counter if time window has passed
+            request_counters[client_ip] = {"count": 1, "start_time": current_time}
+        else:
+            data["count"] += 1
+            if data["count"] > RATE_LIMIT:
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail="Too many requests."
+                )
 
 email_conf = ConnectionConfig(
     MAIL_USERNAME=settings.MAIL_USERNAME,
@@ -169,8 +234,13 @@ email_conf = ConnectionConfig(
     USE_CREDENTIALS=settings.USE_CREDENTIALS
 )
 
-@router.post("/register")
-async def register_user(user: UserCreate, db: Session = Depends(get_db)):
+@router.post("/register", 
+             status_code=status.HTTP_201_CREATED,
+             dependencies=[Depends(rate_limit)]
+            )
+async def register_user(request: Request, user: UserCreate, db: db_dependency):
+    body = await request.body()
+    print(f"Received body: {body}")
     # Check if user already exists
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
@@ -185,7 +255,7 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
         role=user.role,
         apartment_number=user.apartment_number,
         phone_number=user.phone_number,
-        hashed_password=get_password_hash(user.password),
+        hashed_password=bcrypt_context.hash(user.password),
         is_active=False  # Set is_active to False initially
     )
 
@@ -203,22 +273,17 @@ async def send_admin_email(user: User):
         subject="New User Registration",
         recipients=["porticotennis@gmail.com"],
         body=f"""
-        A new user has registered:
-        Email: {user.email}
-        Username: {user.username}
-        Name: {user.first_name} {user.last_name}
-        Role: {user.role}
-        Apartment Number: {user.apartment_number}
-        Phone Number: {user.phone_number}
+        A new user has registered:<br>
+        Email: {user.email}<br>
+        Username: {user.username}<br>
+        Name: {user.first_name} {user.last_name}<br>
+        Role: {user.role}<br>
+        Apartment Number: {user.apartment_number}<br>
+        Phone Number: {user.phone_number}<br>
         """,
         subtype="html"
     )
 
     fm = FastMail(email_conf)
     await fm.send_message(message)
-
-def get_password_hash(password: str):
-    # Implement your password hashing logic here
-    # For example, using bcrypt:
-    # return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-    pass
+    
