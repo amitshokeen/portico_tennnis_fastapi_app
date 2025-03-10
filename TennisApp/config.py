@@ -2,6 +2,8 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    SECRET_KEY: str
+    ALGORITHM: str
     MAIL_USERNAME: str
     MAIL_PASSWORD: str
     MAIL_FROM: str
