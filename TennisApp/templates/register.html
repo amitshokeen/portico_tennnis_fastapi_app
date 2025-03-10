@@ -2,16 +2,16 @@
 <div class="container">
     <h2>Register</h2>
     <form id="registerForm">
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="text" id="username" placeholder="Username" required>
+        <input type="email" id="email" name="email" placeholder="Email" required>
+        <input type="text" id="username" name="username" placeholder="Username" required>
         <p>…it’s best to use your block and apartment number as username. E.g., d203</p>
-        <input type="text" id="firstName" placeholder="First Name" required>
-        <input type="text" id="lastName" placeholder="Last Name" required>
-        <input type="text" id="role" value="Resident" readonly required>
-        <input type="text" id="apartmentNumber" placeholder="Apartment Number" required>
-        <input type="tel" id="phoneNumber" placeholder="Phone Number" pattern="^\+?[0-9]+$" required>
+        <input type="text" id="firstName" name="first_name" placeholder="First Name" required>
+        <input type="text" id="lastName" name="last_name" placeholder="Last Name" required>
+        <input type="text" id="role" name="role" value="Resident" readonly required>
+        <input type="text" id="apartmentNumber" name="apartment_number" placeholder="Apartment Number" required>
+        <input type="tel" id="phoneNumber" name="phone_number" placeholder="Phone Number" pattern="^\+?[0-9]+$" required>
         <div class="password-field">
-            <input type="password" id="password1" placeholder="Password" required>
+            <input type="password" id="password1" name="password" placeholder="Password" required>
             <i class="far fa-eye-slash" id="togglePassword1"></i>
         </div>
         <div class="password-field">
@@ -27,6 +27,22 @@
     </div>
 </div>
 <script>
+    const password1 = document.getElementById('password1');
+    const verifyPassword = document.getElementById('verifyPassword');
+    const errorDiv = document.getElementById('error');
+
+    password1.addEventListener('input', checkPasswordMatch);
+    verifyPassword.addEventListener('input', checkPasswordMatch);
+
+    function checkPasswordMatch() {
+        if (password1.value !== verifyPassword.value) {
+            errorDiv.textContent = 'Passwords do not match';
+            errorDiv.style.color = 'red';
+        } else {
+            errorDiv.textContent = '';
+        }
+    }
+    
     // password toggle - fa-eye
     document.addEventListener('DOMContentLoaded', function() {
         const togglePassword1 = document.querySelector('#togglePassword1');
@@ -62,6 +78,11 @@
         form.addEventListener('submit', function(e) {
             e.preventDefault();
     
+            if (password1.value !== verifyPassword.value) {
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.style.color = 'red';
+                return;
+            }
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
     
