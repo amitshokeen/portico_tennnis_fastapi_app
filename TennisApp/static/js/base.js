@@ -45,35 +45,35 @@ if (loginForm) {
 }
 
 // Registeration form
-const registerForm = document.getElementById('registerForm');
-if (registerForm) {
-    registerForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const errorDiv = document.getElementById('error');
+// const registerForm = document.getElementById('registerForm');
+// if (registerForm) {
+//     registerForm.addEventListener('submit', function(event) {
+//         event.preventDefault();
+//         const password = document.getElementById('password').value;
+//         const confirmPassword = document.getElementById('confirmPassword').value;
+//         const errorDiv = document.getElementById('error');
         
-        if (password !== confirmPassword) {
-            errorDiv.textContent = 'Passwords do not match!';
-            return;
-        }
+//         if (password !== confirmPassword) {
+//             errorDiv.textContent = 'Passwords do not match!';
+//             return;
+//         }
 
-        // Collect form data
-        const userData = {
-            email: document.getElementById('email').value,
-            username: document.getElementById('username').value,
-            firstName: document.getElementById('firstName').value,
-            lastName: document.getElementById('lastName').value,
-            role: document.getElementById('role').value,
-            apartmentNumber: document.getElementById('apartmentNumber').value,
-            phoneNumber: document.getElementById('phoneNumber').value,
-            password: password
-        };
+//         // Collect form data
+//         const userData = {
+//             email: document.getElementById('email').value,
+//             username: document.getElementById('username').value,
+//             firstName: document.getElementById('firstName').value,
+//             lastName: document.getElementById('lastName').value,
+//             role: document.getElementById('role').value,
+//             apartmentNumber: document.getElementById('apartmentNumber').value,
+//             phoneNumber: document.getElementById('phoneNumber').value,
+//             password: password
+//         };
 
-        console.log('User Registered:', userData);
-        alert('Registration successful!');
-    });
-}
+//         console.log('User Registered:', userData);
+//         alert('Registration successful!');
+//     });
+// }
 
 // Logout form
 function logout() {
