@@ -2,20 +2,146 @@
 <div class="container">
     <h2>Register</h2>
     <form id="registerForm">
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="text" id="firstName" placeholder="First Name" required>
-        <input type="text" id="lastName" placeholder="Last Name" required>
-        <input type="text" id="role" placeholder="Role" required>
-        <input type="text" id="apartmentNumber" placeholder="Apartment Number" required>
-        <input type="text" id="phoneNumber" placeholder="Phone Number" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <input type="password" id="confirmPassword" placeholder="Verify Password" required>
+        <input type="text" id="invitationCode" name="invitation_code" placeholder="Invitation Code" required>
+        <input type="email" id="email" name="email" placeholder="Email" required>
+        <input type="text" id="username" name="username" placeholder="Block & apartment number, e.g., a301 or D203" required>
+        <input type="text" id="firstName" name="first_name" placeholder="First Name" required>
+        <input type="text" id="lastName" name="last_name" placeholder="Last Name" required>
+        <input type="text" id="role" name="role" value="resident" style="display: none;" readonly required>
+        <input type="text" id="apartmentNumber" name="apartment_number" placeholder="Apartment Number" style="display: none;" required>        
+        <input type="tel" id="phoneNumber" name="phone_number" placeholder="Phone Number" pattern="^\+?[0-9]+$" required>
+        <div class="password-field">
+            <input type="password" id="password1" name="password" placeholder="Password" required>
+            <i class="far fa-eye-slash" id="togglePassword1"></i>
+        </div>
+        <div class="password-field">
+            <input type="password" id="verifyPassword" placeholder="Verify Password" required>
+            <i class="far fa-eye-slash" id="togglePassword2"></i>
+        </div>
+    
+        <input type="text" id="honeypotField" name="honeypot_field" style="display: none;">
+    
+        <!-- Terms and Conditions Checkbox -->
+        <div class="terms">
+            <input type="checkbox" id="termsCheckbox" required>
+            <label for="termsCheckbox">
+                I agree to the 
+                <a href="/auth/terms-and-conditions-page" target="_blank">Terms and Conditions</a>.
+            </label>
+        </div>
+
         <div id="error" class="error-message"></div>
         <button type="submit">Sign Up</button>
     </form>
     <p></p>
-    <div class="link">
+    <div class="links">
         <a href="/auth/login-page">Already have an account?</a>
     </div>
 </div>
+<script>
+    const password1 = document.getElementById('password1');
+    const verifyPassword = document.getElementById('verifyPassword');
+    const errorDiv = document.getElementById('error');
+    
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('registerForm');
+        const honeypotField = document.getElementById('honeypotField');
+        const errorDiv = document.getElementById('error');
+    
+        form.addEventListener('submit', function (e) {
+            // Check if the honeypot field has been filled
+            if (honeypotField.value.trim() !== "") {
+                e.preventDefault(); // Prevent form submission
+                errorDiv.textContent = "Form submission blocked due to suspicious activity.";
+                errorDiv.style.color = "red";
+            }
+        });
+    });    
+
+    // apartment number will have the same value as the username
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameInput = document.getElementById('username');
+        const apartmentNumberInput = document.getElementById('apartmentNumber');
+        
+        usernameInput.addEventListener('input', function() {
+            apartmentNumberInput.value = this.value;
+        });
+    });
+    
+    // password toggle - fa-eye
+    document.addEventListener('DOMContentLoaded', function() {
+        const togglePassword1 = document.querySelector('#togglePassword1');
+        const togglePassword2 = document.querySelector('#togglePassword2');
+        const password1 = document.querySelector('#password1');
+        const verifyPassword = document.querySelector('#verifyPassword');
+        
+        function togglePasswordVisibility(field, icon) {
+            if (!field || !icon) return;
+            const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+            field.setAttribute('type', type);
+            icon.classList.toggle('fa-eye-slash');
+            icon.classList.toggle('fa-eye');
+        }
+
+        if (togglePassword1) {
+            togglePassword1.addEventListener('click', function() {
+                togglePasswordVisibility(password1, this);
+            });
+        }
+        if (togglePassword2) {
+            togglePassword2.addEventListener('click', function() {
+                togglePasswordVisibility(verifyPassword, this);
+            });
+        }
+    });
+
+    // Submit the form
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registerForm');
+        const errorDiv = document.getElementById('error');
+    
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+    
+            if (password1.value !== verifyPassword.value) {
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.style.color = 'red';
+                return;
+            }
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+    
+            fetch('/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw err;
+                    });
+                }
+                return response.json();
+            })
+            .then(result => {
+                if (result.message) {
+                    errorDiv.textContent = result.message;
+                    errorDiv.style.color = 'green';
+                    form.reset();
+                } 
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (error.detail) {
+                    errorDiv.textContent = error.detail;
+                } else {
+                    errorDiv.textContent = 'An error occurred. Please try again.';
+                }
+                errorDiv.style.color = 'red';
+            });
+        });
+    });    
+</script>

@@ -1,19 +1,28 @@
  /* Basic CSS for styling */
-body {
+ body {
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
     margin: 0;
-    padding: 0;
+    padding: 20px 0; /* Add some vertical padding */
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh; /* Use min-height instead of height */
     background-image: url('../images/tennis_court.png');
-    background-size: cover; /* Ensures the image covers the whole screen */
-    background-position: center; /* Centers the image */
-    background-repeat: no-repeat; /* Prevents the image from repeating */
-    background-attachment: fixed; /* Keeps the image fixed when scrolling */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
+
+/* New wrapper for containers */
+.containers-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; /* This creates space between the containers */
+}
+
 
 .container {
     background-color: white;
@@ -22,6 +31,7 @@ body {
     border-radius: 10px;
     width: 300px;
     text-align: center;
+    margin: 10px 0; /* Add vertical margin */
 }
 
 .container h2 {
@@ -54,4 +64,346 @@ body {
 .error-message {
     color: red;
     margin-top: 10px;
+}
+
+/* Start Time Dropdown */
+#startTimeMenu, #endTimeMenu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Match the input field width */
+    max-height: 200px; /* Limit height */
+    overflow-y: auto; /* Make it scrollable */
+    display: none; /* Initially hidden */
+    z-index: 10; /* Ensure it appears above other elements */
+}
+
+/* Each time slot option */
+#startTimeMenu div, #endTimeMenu div {
+    padding: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+#startTimeMenu div:hover, #endTimeMenu div:hover {
+    background-color: #f1f1f1;
+}
+
+/* Ensure the dropdown appears right below the input field */
+.start-time-container, .end-time-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Ensure the input field is clickable */
+#startTimePicker, #endTimePicker {
+    cursor: pointer;
+    background-color: #fff;
+}
+
+/* Positioning the hamburger on the top right */
+.hamburger-container {
+    position: fixed;
+    top: 10px;
+    right: 15px;
+    z-index: 100;
+}
+
+/* Hamburger button styling */
+.hamburger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 30px;
+    width: 40px;
+    padding: 0;
+}
+
+/* Hamburger lines - white, thick, rounded */
+.hamburger div {
+    width: 30px;
+    height: 20px; /* Increased thickness */
+    background-color: rgb(255, 255, 255); /* White color */
+    border-radius: 6px; /* Rounded edges */
+    margin: 2px 0;
+    transition: 0.3s;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 35px; /* Just below the hamburger */
+    right: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-width: 170px;
+}
+
+/* Dropdown menu links */
+.dropdown-menu a {
+    text-decoration: none;
+    color: black;
+    padding: 10px 15px;
+    display: block;
+    font-size: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f1f1f1;
+}
+
+/* Show dropdown when active */
+.dropdown-menu.active {
+    display: block;
+}
+
+/* Centered Loading Spinner */
+.loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    border: 6px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1000;
+}
+
+/* Hide spinner by default */
+.hidden {
+    display: none;
+}
+
+/* Keyframes for spinner animation */
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.password-field {
+    position: relative;
+}
+
+.password-field i {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+#bookingsContainer {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.booking-header, .booking-row {
+    display: flex;
+    padding: 10px;
+}
+
+.booking-header {
+    background-color: #e0e0e0; /* Slightly darker header */
+    font-weight: bold;
+}
+
+.booking-row:nth-child(odd) {
+    background-color: #ededed; /* Light gray for odd rows */
+}
+
+.booking-row:nth-child(even) {
+    background-color: #ffffff; /* White for even rows */
+}
+
+.booking-column {
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Adjust the flex ratios for different columns */
+.booking-column:nth-child(1) { /* User column */
+    flex: 0 0 60px; /* Fixed width of 60px */
+}
+
+.booking-column:nth-child(2) { /* Date column */
+    flex: 1; /* Takes up remaining space */
+}
+
+.booking-column:nth-child(3) { /* Time column */
+    flex: 1; /* Takes up remaining space */
+}
+
+/* Add hover effect for better interactivity */
+.booking-row:hover {
+    background-color: #f0f0f0; /* Light gray on hover */
+}
+
+.cancel-checkbox {
+    cursor: pointer;
+    font-size: 20px;
+    color: black;
+    transition: color 0.3s;
+}
+
+.cancel-checkbox.selected {
+    color: red; /* Red 'X' when selected */
+}
+
+.submit-cancel-button {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+
+.submit-cancel-button:hover {
+    background-color: #cc0000;
+}
+
+/* Forgot Password specific styles */
+#forgotPasswordForm input[type="email"] {
+    width: 93%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#forgotPasswordForm button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#forgotPasswordForm button:hover {
+    background-color: #0056b3;
+}
+
+.success-message {
+    color: green;
+    margin-top: 10px;
+}
+
+.links {
+    margin-top: 15px;
+}
+
+.links a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+  
+  .back-arrow {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    border-left: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    margin-right: 0.5em;
+    transition: transform 0.3s ease;
+  }
+  
+  .back-link:hover, .back-link:focus {
+    color: #0056b3;
+  }
+  
+  .back-link:hover .back-arrow, .back-link:focus .back-arrow {
+    transform: rotate(45deg) translate(-2px, -2px);
+  }
+  
+  /* Styling for the Terms and Conditions container */
+.terms {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #333;
+    text-align: left;
+}
+
+/* Styling for the checkbox */
+.terms input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+/* Checkbox checked state */
+.terms input[type="checkbox"]:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+    position: relative;
+}
+
+/* Tick mark for checked state */
+.terms input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Styling for the label text */
+.terms label {
+    cursor: pointer;
+    display: inline-block;
+}
+
+/* Styling for the Terms and Conditions link */
+.terms a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.terms a:hover {
+    text-decoration: underline;
 }

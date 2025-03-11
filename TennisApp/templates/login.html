@@ -3,13 +3,18 @@
     <h2>Portico Tennis Login</h2>
     <form id="loginForm">
         <input type="text" id="username" placeholder="Username" name="username" autocomplete="username" required><br>
-        <input type="password" id="password" placeholder="Password" name="password" autocomplete="current-password" required><br>
+        <div class="password-field">
+            <input type="password" id="password" placeholder="Password" name="password" autocomplete="current-password" required><br>
+            <i class="far fa-eye-slash" id="toggleLoginPassword"></i>
+        </div>
         <button type="submit">Login</button>
+        <div id="loadingSpinner" class="loading-spinner hidden"></div>
     </form>
     <p class="error-message" id="errorMessage"></p>
-    <div class="link">
+    <div class="links">
         <a href="/auth/register-page">Register?</a>
+        &nbsp;&nbsp;
+        <a href="/auth/forgot-password">Forgot Password?</a>
     </div>
 </div>
-
     
