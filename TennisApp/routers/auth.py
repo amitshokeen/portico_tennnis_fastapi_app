@@ -1,7 +1,9 @@
 from datetime import timedelta, datetime, timezone
-from fastapi import APIRouter, Depends, status, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, status, HTTPException, Request, Query
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, EmailStr, StringConstraints, field_validator, Field
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from pydantic import ValidationError
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from ..models import User
 from ..config import settings
@@ -74,6 +76,11 @@ def render_register_page(request: Request):
 @router.get("/forgot-password")
 def render_forgot_password_page(request: Request):
     return templates.TemplateResponse("forgot-password.html", {"request": request})
+
+@router.get("/terms-and-conditions-page")
+def render_terms_and_conditions_page(request: Request):
+    return templates.TemplateResponse("terms-and-conditions-page.html", {"request": request})
+
 
 ### Endpoints ###
 """
@@ -169,6 +176,7 @@ class UserCreate(BaseModel):
         description="Australian phone number starting with +61 or 04"
     )
     password: str
+    invitation_code: str = Field(..., description="Invitation code required for registration")
 
     @field_validator('username')
     def validate_username(cls, v):
@@ -238,35 +246,57 @@ email_conf = ConnectionConfig(
              status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(rate_limit)]
             )
-async def register_user(request: Request, user: UserCreate, db: db_dependency):
-    body = await request.body()
-    print(f"Received body: {body}")
-    # Check if user already exists
-    db_user = db.query(User).filter(User.email == user.email).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+async def register_user(user: UserCreate, db: db_dependency):
+    try:
+        # Check invitation code
+        if user.invitation_code not in settings.VALID_INVITATION_CODES.split(","):
+            raise HTTPException(status_code=400, detail="Invalid invitation code")
 
-    # Create new user
-    new_user = User(
-        email=user.email,
-        username=user.username,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        role=user.role,
-        apartment_number=user.apartment_number,
-        phone_number=user.phone_number,
-        hashed_password=bcrypt_context.hash(user.password),
-        is_active=False  # Set is_active to False initially
-    )
+        # Check if user already exists
+        db_user = db.query(User).filter(User.email == user.email).first()
+        if db_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+        # Check if username is unique
+        db_username = db.query(User).filter(User.username == user.username).first()
+        if db_username:
+            raise HTTPException(status_code=400, detail="Username already taken")
 
-    # Send email to admin
-    await send_admin_email(new_user)
+        # Check if apartment number is unique
+        db_apartment = db.query(User).filter(User.apartment_number == user.apartment_number).first()
+        if db_apartment:
+            raise HTTPException(status_code=400, detail="Apartment number already registered")
 
-    return {"message": "Registration successful. An email has been sent to the admin for approval."}
+        # Create new user
+        new_user = User(
+            email=user.email,
+            username=user.username,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            role=user.role,
+            apartment_number=user.apartment_number,
+            phone_number=user.phone_number,
+            hashed_password=bcrypt_context.hash(user.password),
+            is_active=False
+        )
+
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        # Send email to admin
+        await send_admin_email(new_user)
+
+        return {"message": "Registration successful. An email has been sent to the admin for approval."}
+
+    except HTTPException as e:
+        print(f"HTTP Exception: {e.detail}")  # Debugging message
+        raise e  # Re-raise so FastAPI handles it correctly
+
+    except Exception as e:
+        db.rollback()
+        print(f"Unexpected Error: {e}") 
+        raise HTTPException(status_code=500, detail="An unexpected error occurred")
 
 async def send_admin_email(user: User):
     message = MessageSchema(

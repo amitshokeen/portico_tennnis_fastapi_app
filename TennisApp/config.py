@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     MAIL_STARTTLS: bool = Field(default=True)
     MAIL_SSL_TLS: bool = Field(default=False)
     USE_CREDENTIALS: bool = Field(default=True)
+    VALID_INVITATION_CODES: str
 
     model_config = SettingsConfigDict(env_file=".env")
 
