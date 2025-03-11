@@ -2,13 +2,13 @@
 <div class="container">
     <h2>Register</h2>
     <form id="registerForm">
+        <input type="text" id="invitationCode" name="invitation_code" placeholder="Invitation Code" required>
         <input type="email" id="email" name="email" placeholder="Email" required>
-        <input type="text" id="username" name="username" placeholder="Username" required>
-        <p>…it’s best to use your block and apartment number as username. E.g., d203</p>
+        <input type="text" id="username" name="username" placeholder="Block & apartment number, e.g., a301 or D203" required>
         <input type="text" id="firstName" name="first_name" placeholder="First Name" required>
         <input type="text" id="lastName" name="last_name" placeholder="Last Name" required>
-        <input type="text" id="role" name="role" value="Resident" readonly required>
-        <input type="text" id="apartmentNumber" name="apartment_number" placeholder="Apartment Number" required>
+        <input type="text" id="role" name="role" value="resident" style="display: none;" readonly required>
+        <input type="text" id="apartmentNumber" name="apartment_number" placeholder="Apartment Number" style="display: none;" required>        
         <input type="tel" id="phoneNumber" name="phone_number" placeholder="Phone Number" pattern="^\+?[0-9]+$" required>
         <div class="password-field">
             <input type="password" id="password1" name="password" placeholder="Password" required>
@@ -18,6 +18,18 @@
             <input type="password" id="verifyPassword" placeholder="Verify Password" required>
             <i class="far fa-eye-slash" id="togglePassword2"></i>
         </div>
+    
+        <input type="text" id="honeypotField" name="honeypot_field" style="display: none;">
+    
+        <!-- Terms and Conditions Checkbox -->
+        <div class="terms">
+            <input type="checkbox" id="termsCheckbox" required>
+            <label for="termsCheckbox">
+                I agree to the 
+                <a href="/auth/terms-and-conditions-page" target="_blank">Terms and Conditions</a>.
+            </label>
+        </div>
+
         <div id="error" class="error-message"></div>
         <button type="submit">Sign Up</button>
     </form>
@@ -30,18 +42,31 @@
     const password1 = document.getElementById('password1');
     const verifyPassword = document.getElementById('verifyPassword');
     const errorDiv = document.getElementById('error');
+    
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('registerForm');
+        const honeypotField = document.getElementById('honeypotField');
+        const errorDiv = document.getElementById('error');
+    
+        form.addEventListener('submit', function (e) {
+            // Check if the honeypot field has been filled
+            if (honeypotField.value.trim() !== "") {
+                e.preventDefault(); // Prevent form submission
+                errorDiv.textContent = "Form submission blocked due to suspicious activity.";
+                errorDiv.style.color = "red";
+            }
+        });
+    });    
 
-    password1.addEventListener('input', checkPasswordMatch);
-    verifyPassword.addEventListener('input', checkPasswordMatch);
-
-    function checkPasswordMatch() {
-        if (password1.value !== verifyPassword.value) {
-            errorDiv.textContent = 'Passwords do not match';
-            errorDiv.style.color = 'red';
-        } else {
-            errorDiv.textContent = '';
-        }
-    }
+    // apartment number will have the same value as the username
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameInput = document.getElementById('username');
+        const apartmentNumberInput = document.getElementById('apartmentNumber');
+        
+        usernameInput.addEventListener('input', function() {
+            apartmentNumberInput.value = this.value;
+        });
+    });
     
     // password toggle - fa-eye
     document.addEventListener('DOMContentLoaded', function() {
@@ -93,20 +118,28 @@
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw err;
+                    });
+                }
+                return response.json();
+            })
             .then(result => {
                 if (result.message) {
                     errorDiv.textContent = result.message;
                     errorDiv.style.color = 'green';
                     form.reset();
-                } else if (result.error) {
-                    errorDiv.textContent = result.error;
-                    errorDiv.style.color = 'red';
-                }
+                } 
             })
             .catch(error => {
                 console.error('Error:', error);
-                errorDiv.textContent = 'An error occurred. Please try again.';
+                if (error.detail) {
+                    errorDiv.textContent = error.detail;
+                } else {
+                    errorDiv.textContent = 'An error occurred. Please try again.';
+                }
                 errorDiv.style.color = 'red';
             });
         });

@@ -352,3 +352,58 @@
     transform: rotate(45deg) translate(-2px, -2px);
   }
   
+  /* Styling for the Terms and Conditions container */
+.terms {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #333;
+    text-align: left;
+}
+
+/* Styling for the checkbox */
+.terms input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+/* Checkbox checked state */
+.terms input[type="checkbox"]:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+    position: relative;
+}
+
+/* Tick mark for checked state */
+.terms input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Styling for the label text */
+.terms label {
+    cursor: pointer;
+    display: inline-block;
+}
+
+/* Styling for the Terms and Conditions link */
+.terms a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.terms a:hover {
+    text-decoration: underline;
+}
