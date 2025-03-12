@@ -23,7 +23,7 @@ VALID_INVITATION_CODES=`SAMPLE123,EXAMPLE123`
   $ `uvicorn TennisApp.main:app --reload`  
 Open the browser, navigate to `127.0.0.1:8000`  
 
-* For production:
+* For production:  
   Use this command to start the server:  
   $ `fastapi run --workers 1 TennisApp/main.py`  
 
