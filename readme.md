@@ -16,7 +16,7 @@ VALID_INVITATION_CODES=`SAMPLE123,EXAMPLE123`
 
 * Enter the virtual environment: $ `source .venv/bin/activate`
 
-* Install the required packages: $ `pip install -r requirements.txt`
+* Install the required packages: $ `pip3 install -r requirements.txt`
 
 * For development:  
   Use this command to start the server:  
