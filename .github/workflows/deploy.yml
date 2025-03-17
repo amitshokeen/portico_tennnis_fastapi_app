@@ -35,7 +35,7 @@ jobs:
           git pull origin master
 
           # Activate virtual environment
-          source ~/.venv/bin/activate
+          source ~/portico_tennnis_fastapi_app/.venv/bin/activate
 
           # Install new dependencies if needed
           pip install -r requirements.txt
