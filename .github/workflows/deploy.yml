@@ -1,0 +1,47 @@
+name: Deploy to DigitalOcean Droplet
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 170.64.246.52 >> ~/.ssh/known_hosts
+
+      - name: Deploy to DigitalOcean
+        run: |
+          ssh amit@170.64.246.52 << 'EOF'
+          set -e  # Exit on first error
+
+          # Change to the project directory
+          cd ~/portico_tennnis_fastapi_app
+
+          # Pull latest changes from GitHub
+          git pull origin master
+
+          # Activate virtual environment
+          source ~/.venv/bin/activate
+
+          # Install new dependencies if needed
+          pip install -r requirements.txt
+
+          # Restart FastAPI service
+          sudo systemctl restart fastapi
+
+          # Restart Nginx (if config changed)
+          sudo systemctl restart nginx || true
+
+          echo "Deployment successful!"
+          EOF
