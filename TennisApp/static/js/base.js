@@ -1,11 +1,16 @@
 // Login Form
 const loginForm = document.getElementById("loginForm");
+const usernameInput = document.getElementById("username");
+
 if (loginForm) {
     loginForm.addEventListener('submit', async function (event) {
         event.preventDefault();
 
         const form = event.target;
         const formData = new FormData(form);
+
+        // I want to keep all username values as case-insensitive.
+        formData.set('username', formData.get('username').toLowerCase());
 
         const payload = new URLSearchParams();
         for (const [key, value] of formData.entries()) {

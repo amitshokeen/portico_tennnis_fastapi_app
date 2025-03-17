@@ -32,6 +32,7 @@
 
         <div id="error" class="error-message"></div>
         <button type="submit">Sign Up</button>
+        <div id="loadingSpinner" class="loading-spinner hidden"></div>
     </form>
     <p></p>
     <div class="links">
@@ -109,8 +110,13 @@
                 return;
             }
             const formData = new FormData(form);
+            
+            // I want to keep all username values as case-insensitive.
+            formData.set('username', formData.get('username').toLowerCase());
+            
             const data = Object.fromEntries(formData.entries());
-    
+            
+            showLoading();
             fetch('/auth/register', {
                 method: 'POST',
                 headers: {
@@ -141,7 +147,20 @@
                     errorDiv.textContent = 'An error occurred. Please try again.';
                 }
                 errorDiv.style.color = 'red';
+            })
+            .finally(() => {
+                hideLoading();
             });
         });
     });    
+    // Function to show loading animation
+function showLoading() {
+    document.getElementById("loadingSpinner").classList.remove("hidden");
+}
+
+// Function to hide loading animation
+function hideLoading() {
+    document.getElementById("loadingSpinner").classList.add("hidden");
+}
+
 </script>
