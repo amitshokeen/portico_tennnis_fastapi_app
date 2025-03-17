@@ -15,11 +15,13 @@ jobs:
 
       - name: Set up SSH
         run: |
+          set -x # Enable debugging mode (prints commands before execution)
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | sed 's/\r$//' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 170.64.246.52 >> ~/.ssh/known_hosts
           ls -lah ~/.ssh
+          stat ~/.ssh/id_rsa  # Show file permissions
           cat ~/.ssh/id_rsa | head -n 3  # Show first few lines to verify the key is there
 
       - name: Deploy to DigitalOcean
