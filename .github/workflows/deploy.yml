@@ -41,10 +41,10 @@ jobs:
           pip install -r requirements.txt
 
           # Restart FastAPI service
-          sudo systemctl restart fastapi
+          sudo /bin/systemctl restart fastapi
 
           # Restart Nginx (if config changed)
-          sudo systemctl restart nginx || true
+          sudo /bin/systemctl restart nginx || true
 
           echo "Deployment successful!"
           EOF
