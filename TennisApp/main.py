@@ -2,13 +2,23 @@ from fastapi import FastAPI, Request, status
 from .models import Base
 from .database import engine
 from .routers import auth, users, admin, bookings
-#from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from .config import settings
 
-app = FastAPI()
+env = settings.ENV # "production" is the default value
+if env == "development":
+    app = FastAPI()
+    
+else:
+    app = FastAPI(
+        openapi_url=None,  # Disable /openapi.json
+        docs_url=None,      # Disable /docs
+        redoc_url=None      # Disable /redoc
+    )
+    
 
 Base.metadata.create_all(bind=engine)
 
