@@ -182,3 +182,18 @@ async def reset_password(
     db.commit()
 
     return {"message": "Password reset successful"}
+
+@router.post("/send-test-email")
+async def send_test_email(background_tasks: BackgroundTasks):
+    message = MessageSchema(
+        subject="Portico Tennis App - Test Email",
+        recipients=[settings.MAIL_FROM],  # Send test email to your own email
+        body="This is a test email from Portico Tennis App using Brevo SMTP.",
+        subtype="html",
+    )
+    fm = FastMail(email_config)
+    try:
+        background_tasks.add_task(fm.send_message, message)
+        return {"message": "Test email sent successfully!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

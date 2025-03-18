@@ -23,6 +23,7 @@ alembic.ini  # Only ignore if you have environment-specific changes
 # Environment variables
 .env
 .env.*
+.env_old
 
 # Logs and database
 logs/
