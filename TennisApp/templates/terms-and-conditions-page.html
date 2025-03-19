@@ -42,13 +42,52 @@
             font-weight: bold;
             color: #007bff;
         }
+        links {
+            margin-top: 15px;
+        }
+        
+        .links a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .links a:hover {
+            text-decoration: underline;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+          }
+          
+          .back-arrow {
+            display: inline-block;
+            width: 0.8em;
+            height: 0.8em;
+            border-left: 2px solid currentColor;
+            border-bottom: 2px solid currentColor;
+            transform: rotate(45deg);
+            margin-right: 0.5em;
+            transition: transform 0.3s ease;
+          }
+          
+          .back-link:hover, .back-link:focus {
+            color: #0056b3;
+          }
+          
+          .back-link:hover .back-arrow, .back-link:focus .back-arrow {
+            transform: rotate(45deg) translate(-2px, -2px);
+          }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Terms and Conditions</h1>
-        <p><strong>Effective Date:</strong> [Insert Date]</p>
+        <p><strong>Effective Date:</strong>19 March 2025</p>
 
         <h2>1. About This App</h2>
         <p>This app is designed exclusively for the <span class="highlight">Portico Apartments at Toongabbie</span> community to fairly manage access to the shared <strong>tennis court</strong>. It is a <span class="highlight">non-commercial</span> platform available only to <strong>apartment owners and tenants</strong>.</p>
