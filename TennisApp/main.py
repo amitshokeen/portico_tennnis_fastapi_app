@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from .config import settings
 
 env = settings.ENV # "production" is the default value
-if env == "development":
+if env == "development": 
     app = FastAPI()
     
 else:
