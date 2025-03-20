@@ -187,6 +187,7 @@ async def login_for_access_token(
     remember_me: bool = Query(False, description="Remember Me checkbox"),
     db: Session = Depends(get_db)
 ):
+    print(f"DEBUG: Remember Me Received from Client: {remember_me}")
     user = db.query(User).filter(User.username == form_data.username).first()
     if not user \
         or not bcrypt_context.verify(form_data.password, user.hashed_password) \
