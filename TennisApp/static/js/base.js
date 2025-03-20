@@ -2,6 +2,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     // Check if user is already authenticated
     const token = getToken();
+    console.log("retrieved token:", token);
     if (token) {
         console.log("User is authenticated, redirecting...");
         window.location.href = "/bookings/bookings-page"; // Redirect if already logged in
@@ -141,10 +142,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function getToken() {
     console.log("... I'm getting the token: ")
-    return document.cookie
-        .split('; ')
-        .find(row => row.startsWith('access_token='))
-        ?.split('=')[1] || null;
+    const theToken = document.cookie
+                    .split('; ')
+                    .find(row => row.startsWith('access_token='))
+                    ?.split('=')[1]
+    console.log("...and the token is:", theToken);                    
+    return theToken || null;
 }
 
 // Show startTimePicker dropdown on click
