@@ -140,6 +140,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // }
 
 function getToken() {
+    console.log("... I'm getting the token: ")
     return document.cookie
         .split('; ')
         .find(row => row.startsWith('access_token='))
