@@ -108,6 +108,7 @@ def create_access_token(username: str, user_id: int, role: str, expires_delta: t
     encode = {'sub': username, 'id': user_id, 'role': role}
     expires = datetime.now(timezone.utc) + expires_delta
     encode.update({'exp': expires})
+    print(f"DEBUG: Token Expiry Time Set to: {expires}")
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 # async def get_current_user(request: Request):
@@ -193,6 +194,7 @@ async def login_for_access_token(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     
     expires_delta = timedelta(days=30) if remember_me else timedelta(hours=1)  # Updated expiration logic
+    print(f"DEBUG: Remember Me={remember_me}, Token Expiration={expires_delta}")
     token = create_access_token(user.username, user.id, user.role, expires_delta)
     
     response.set_cookie(
