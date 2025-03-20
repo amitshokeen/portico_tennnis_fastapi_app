@@ -1,15 +1,22 @@
 // Login Form
-const loginForm = document.getElementById("loginForm");
+document.addEventListener("DOMContentLoaded", function () {
+    // Check if user is already authenticated
+    const token = getToken();
+    if (token) {
+        window.location.href = "/bookings/bookings-page"; // Redirect if already logged in
+    }
 
-if (loginForm) {
-    loginForm.addEventListener('submit', async function (event) {
+    const loginForm = document.getElementById("loginForm");
+    if (!loginForm) return;
+
+    loginForm.addEventListener("submit", async function (event) {
         event.preventDefault();
 
         const form = event.target;
         const formData = new FormData(form);
 
         // Convert username to lowercase to enforce case-insensitive login
-        formData.set('username', formData.get('username').toLowerCase());
+        formData.set("username", formData.get("username").toLowerCase());
 
         // Check if "Remember Me" is checked
         const rememberMeCheckbox = document.getElementById("rememberMe");
@@ -25,51 +32,59 @@ if (loginForm) {
         showLoading();  // Show loading spinner before sending request
 
         try {
-            const response = await fetch('/auth/login', {  // Updated endpoint
-                method: 'POST',
+            const response = await fetch("/auth/login", {  // Updated endpoint
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    "Content-Type": "application/x-www-form-urlencoded"
                 },
                 body: payload.toString(),
-                credentials: 'include'  // Ensures cookies are sent with the request
+                credentials: "include"  // Ensures cookies are sent with the request
             });
 
             if (response.ok) {
                 // Redirect to the bookings page upon successful login
-                window.location.href = '/bookings/bookings-page';
+                window.location.href = "/bookings/bookings-page";
             } else {
                 // Handle errors
                 const errorData = await response.json();
                 alert(`Error: ${errorData.detail}`);
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            console.error("Error:", error);
+            alert("An error occurred. Please try again.");
         } finally {
             hideLoading(); // Hide loading spinner after fetch completes
         }
     });
-}
+});
+
 
 // Logout function
-async function logout() {
-    try {
-        const response = await fetch('/auth/logout', {  // Updated to call the backend logout API
-            method: 'POST',
-            credentials: 'include'  // Ensures cookies are included in the request
-        });
+// async function logout() {
+//     try {
+//         const response = await fetch('/auth/logout', {  // Updated to call the backend logout API
+//             method: 'POST',
+//             credentials: 'include'  // Ensures cookies are included in the request
+//         });
 
-        if (response.ok) {
-            // Redirect to login page after successful logout
-            window.location.href = '/auth/login-page';
-        } else {
-            alert('Logout failed. Please try again.');
-        }
-    } catch (error) {
-        console.error('Logout error:', error);
-        alert('An error occurred. Please try again.');
-    }
-};
+//         if (response.ok) {
+//             // Redirect to login page after successful logout
+//             window.location.href = '/auth/login-page';
+//         } else {
+//             alert('Logout failed. Please try again.');
+//         }
+//     } catch (error) {
+//         console.error('Logout error:', error);
+//         alert('An error occurred. Please try again.');
+//     }
+// };
+function logout() {
+    // Delete the access_token cookie
+    document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=lax";
+
+    // Redirect to login page
+    window.location.href = "/auth/login-page";
+}
 
 
 // Make the entire "Select a Date" box clickable
@@ -122,6 +137,13 @@ document.addEventListener("DOMContentLoaded", function () {
 //     }
 //     return null;
 // }
+
+function getToken() {
+    return document.cookie
+        .split('; ')
+        .find(row => row.startsWith('access_token='))
+        ?.split('=')[1] || null;
+}
 
 // Show startTimePicker dropdown on click
 document.addEventListener("DOMContentLoaded", function () {
