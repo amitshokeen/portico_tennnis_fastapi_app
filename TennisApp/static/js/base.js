@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Check if user is already authenticated
     const token = getToken();
     if (token) {
+        console.log("User is authenticated, redirecting...");
         window.location.href = "/bookings/bookings-page"; // Redirect if already logged in
     }
 
