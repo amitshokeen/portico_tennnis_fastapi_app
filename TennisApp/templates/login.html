@@ -7,13 +7,17 @@
             <input type="password" id="password" placeholder="Password" name="password" autocomplete="current-password" required><br>
             <i class="far fa-eye-slash" id="toggleLoginPassword"></i>
         </div>
+        <div class="remember-me">
+            <input type="checkbox" id="rememberMe" name="remember_me">
+            <label for="rememberMe">Remember Me</label>
+        </div>
         <button type="submit">Login</button>
         <div id="loadingSpinner" class="loading-spinner hidden"></div>
     </form>
     <p class="error-message" id="errorMessage"></p>
     <div class="links">
         <a href="/auth/register-page">Register here</a>
-        &nbsp;&nbsp;
+        &nbsp;|&nbsp;
         <a href="/auth/forgot-password">Forgot Password?</a>
     </div>
 </div>

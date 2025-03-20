@@ -1,6 +1,5 @@
 // Login Form
 const loginForm = document.getElementById("loginForm");
-const usernameInput = document.getElementById("username");
 
 if (loginForm) {
     loginForm.addEventListener('submit', async function (event) {
@@ -9,34 +8,37 @@ if (loginForm) {
         const form = event.target;
         const formData = new FormData(form);
 
-        // I want to keep all username values as case-insensitive.
+        // Convert username to lowercase to enforce case-insensitive login
         formData.set('username', formData.get('username').toLowerCase());
 
+        // Check if "Remember Me" is checked
+        const rememberMeCheckbox = document.getElementById("rememberMe");
+        const rememberMe = rememberMeCheckbox.checked ? "true" : "false";
+        formData.set("remember_me", rememberMe); // Add "remember_me" to the form data
+
+        // Prepare payload
         const payload = new URLSearchParams();
         for (const [key, value] of formData.entries()) {
             payload.append(key, value);
         }
 
-        showLoading();  // Show spinner before the request
+        showLoading();  // Show loading spinner before sending request
+
         try {
-            const response = await fetch('/auth/token', {
+            const response = await fetch('/auth/login', {  // Updated endpoint
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: payload.toString()
+                body: payload.toString(),
+                credentials: 'include'  // Ensures cookies are sent with the request
             });
 
             if (response.ok) {
-                // Handle success (e.g., redirect to dashboard)
-                const data = await response.json();
-                // Delete any cookies available
-                logout();
-                // Save token to cookie
-                document.cookie = `access_token=${data.access_token}; path=/`;
-                window.location.href = '/bookings/bookings-page'; // Change this to your desired redirect page
+                // Redirect to the bookings page upon successful login
+                window.location.href = '/bookings/bookings-page';
             } else {
-                // Handle error
+                // Handle errors
                 const errorData = await response.json();
                 alert(`Error: ${errorData.detail}`);
             }
@@ -44,28 +46,31 @@ if (loginForm) {
             console.error('Error:', error);
             alert('An error occurred. Please try again.');
         } finally {
-            hideLoading(); // Hide spinner after fetch completes
+            hideLoading(); // Hide loading spinner after fetch completes
         }
     });
 }
 
-// Logout form
-function logout() {
-    // Get all cookies
-    const cookies = document.cookie.split(";");
+// Logout function
+async function logout() {
+    try {
+        const response = await fetch('/auth/logout', {  // Updated to call the backend logout API
+            method: 'POST',
+            credentials: 'include'  // Ensures cookies are included in the request
+        });
 
-    // Iterate through all cookies and delete each one
-    for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i];
-        const eqPos = cookie.indexOf("=");
-        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-        // Set the cookie's expiry date to a past date to delete it
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        if (response.ok) {
+            // Redirect to login page after successful logout
+            window.location.href = '/auth/login-page';
+        } else {
+            alert('Logout failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        alert('An error occurred. Please try again.');
     }
-
-    // Redirect to the login page
-    window.location.href = '/auth/login-page';
 };
+
 
 // Make the entire "Select a Date" box clickable
 document.addEventListener("DOMContentLoaded", function () {
@@ -107,16 +112,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// Function to Retrieve Token from Cookies
-function getToken() {
-    const cookies = document.cookie.split('; ');
-    for (let cookie of cookies) {
-        if (cookie.startsWith('access_token=')) {
-            return cookie.split('=')[1];
-        }
-    }
-    return null;
-}
+// // Function to Retrieve Token from Cookies
+// function getToken() {
+//     const cookies = document.cookie.split('; ');
+//     for (let cookie of cookies) {
+//         if (cookie.startsWith('access_token=')) {
+//             return cookie.split('=')[1];
+//         }
+//     }
+//     return null;
+// }
 
 // Show startTimePicker dropdown on click
 document.addEventListener("DOMContentLoaded", function () {
@@ -145,10 +150,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     method: "POST",
                     headers: { 
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${getToken()}`
+                        //"Authorization": `Bearer ${getToken()}`
                     },
                     body: JSON.stringify({ date: selectedDate }),
-                    //credentials: 'include'
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
@@ -239,12 +244,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     method: "POST",
                     headers: { 
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${getToken()}`
+                        //"Authorization": `Bearer ${getToken()}`
                     },
                     body: JSON.stringify({ 
                         date: selectedDate,
                         start_time: startTime
                     }),
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
@@ -367,10 +373,11 @@ const passwordChangeForm = document.getElementById("passwordChangeForm");
                     method: 'PUT',
                     headers: {
                         "Content-Type": 'application/json',
-                        "Authorization": `Bearer ${getToken()}`
+                        //"Authorization": `Bearer ${getToken()}`
 
                     },
-                    body: JSON.stringify(passwordData)
+                    body: JSON.stringify(passwordData),
+                    credentials: 'include'
                 });
 
                 if (response.ok) {
@@ -465,28 +472,28 @@ document.addEventListener("DOMContentLoaded", function () {
         const startTimeISO = convertToISO(selectedDate, selectedStartTime);
         const endTimeISO = convertToISO(selectedDate, selectedEndTime);
 
-        // Retrieve user_id from token
-        const token = getToken();
-        if (!token) {
-            alert("Authentication error. Please log in again.");
-            window.location.href = "/auth/login-page";
-            return;
-        }
+        // // Retrieve user_id from token
+        // const token = getToken();
+        // if (!token) {
+        //     alert("Authentication error. Please log in again.");
+        //     window.location.href = "/auth/login-page";
+        //     return;
+        // }
 
-        let user_id;
-        try {
-            const payload = JSON.parse(atob(token.split(".")[1])); // Decode JWT payload
-            user_id = payload.id;
-        } catch (error) {
-            console.error("Error decoding token:", error);
-            alert("Invalid session. Please log in again.");
-            window.location.href = "/auth/login-page";
-            return;
-        }
+        // let user_id;
+        // try {
+        //     const payload = JSON.parse(atob(token.split(".")[1])); // Decode JWT payload
+        //     user_id = payload.id;
+        // } catch (error) {
+        //     console.error("Error decoding token:", error);
+        //     alert("Invalid session. Please log in again.");
+        //     window.location.href = "/auth/login-page";
+        //     return;
+        // }
 
         // Prepare request payload
         const requestBody = {
-            user_id: user_id,
+            //user_id: user_id,
             date: selectedDate,
             start_time: startTimeISO,
             end_time: endTimeISO,
@@ -502,9 +509,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    //"Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(requestBody),
+                credentials: 'include'
             });
 
             // Log the full response object to inspect it in detail
@@ -516,7 +524,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const data = await response.json();
-            //console.log("Booking Confirmed:", data);
+            console.log("Booking Confirmed:", data);
             // console.log("Bookings Array:", data.bookings);
             // console.log("0: user_id:", data.bookings[0].user_id);
             // console.log("0: date:", data.bookings[0].date);

@@ -102,14 +102,15 @@ class BookingRequest(BaseModel):
 
 def redirect_to_login():
     redirect_response = RedirectResponse(url="/auth/login-page", status_code=status.HTTP_302_FOUND)
-    redirect_response.delete_cookie(key="access_token")
+    #redirect_response.delete_cookie(key="access_token")
     return redirect_response
 
 ### Pages ###
 @router.get("/bookings-page", status_code=status.HTTP_200_OK)
 async def render_bookings_page(request: Request, db: db_dependency):
     try:
-        user = await get_current_user(request.cookies.get('access_token'))
+        #user = await get_current_user(request.cookies.get('access_token'))
+        user = await get_current_user(request)
         if user is None:
             return redirect_to_login()
 
@@ -152,7 +153,8 @@ async def render_bookings_page(request: Request, db: db_dependency):
 @router.get("/cancel-booking", status_code=status.HTTP_200_OK)
 async def render_cancel_booking_page(request: Request, db: db_dependency):
     try:
-        user = await get_current_user(request.cookies.get('access_token'))
+        #user = await get_current_user(request.cookies.get('access_token'))
+        user = await get_current_user(request)
         if user is None:
             return redirect_to_login()
         

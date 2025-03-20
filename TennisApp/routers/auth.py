@@ -1,5 +1,5 @@
 from datetime import timedelta, datetime, timezone
-from fastapi import APIRouter, Depends, status, HTTPException, Request, Query
+from fastapi import APIRouter, Depends, status, HTTPException, Request, Query, Response
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, EmailStr, StringConstraints, field_validator, Field
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -15,9 +15,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
-import os
-import pytz
-import time
+import os, pytz, time
 
 load_dotenv()
 
@@ -112,23 +110,55 @@ def create_access_token(username: str, user_id: int, role: str, expires_delta: t
     encode.update({'exp': expires})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
-async def get_current_user(
-        token: Annotated[str, Depends(oauth2_bearer)]
-    ):
-    try: 
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get('sub')
-        user_id: int = payload.get('id')
-        user_role: str = payload.get('role')
-        if username is None or user_id is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail='Could not validate user.')
-        return {'username': username, 'id': user_id, 'user_role': user_role}
-    except JWTError as e:
-        print(f"Exception occurred: {e}")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail='Could not validate user.')
-    
+# async def get_current_user(request: Request):
+#     token = request.cookies.get("access_token")  # Fetch token from cookies
+#     if not token:
+#         raise HTTPException(status_code=401, detail="Not authenticated")
+#     try:
+#         payload = jwt.decode(token.split(" ")[1], SECRET_KEY, algorithms=[ALGORITHM])
+#         return {"username": payload["sub"], "id": payload["id"], "user_role": payload["role"]}
+#     except JWTError:
+#         raise HTTPException(status_code=401, detail="Invalid token")
+
+async def get_current_user(request: Request):
+    db = next(get_db())
+    token = request.cookies.get("access_token")  # Fetch token from cookies
+
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    try:
+        # Ensure token has "Bearer" prefix and split correctly
+        scheme, access_token = token.split(" ")
+        if scheme.lower() != "bearer":
+            raise HTTPException(status_code=401, detail="Invalid authentication scheme")
+
+        # Decode JWT token
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        user_id = payload.get("id")
+        user_role = payload.get("role")
+        exp = payload.get("exp")
+
+        if not username or not user_id:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+
+        # Check if token is expired
+        if datetime.fromtimestamp(exp, timezone.utc) < datetime.now(timezone.utc):
+            raise HTTPException(status_code=401, detail="Token has expired")
+
+        # Check if user exists and is active
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user or not user.is_active:
+            raise HTTPException(status_code=401, detail="User is inactive or does not exist")
+
+        return {"username": username, "id": user_id, "user_role": user_role}
+
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid token format")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+        
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(
                         db: db_dependency, 
@@ -149,21 +179,39 @@ async def create_user(
     db.add(create_user_model)
     db.commit()
 
-@router.post("/token", response_model=Token)
+@router.post("/login")
 async def login_for_access_token(
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        db: db_dependency
-    ): 
-    user = authenticate_user(form_data.username, form_data.password, db)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Could not validate user.'
-        )
-    token = create_access_token(user.username, user.id, user.role, timedelta(minutes=20))
+    response: Response,
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    remember_me: bool = Query(False, description="Remember Me checkbox"),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.username == form_data.username).first()
+    if not user \
+        or not bcrypt_context.verify(form_data.password, user.hashed_password) \
+        or not user.is_active:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     
-    return {'access_token': token, 'token_type': 'bearer'}
+    expires_delta = timedelta(days=30) if remember_me else timedelta(hours=1)  # Updated expiration logic
+    token = create_access_token(user.username, user.id, user.role, expires_delta)
     
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {token}",
+        httponly=True,
+        secure=True,
+        samesite="Lax",
+        max_age=30 * 24 * 60 * 60 if remember_me else 60 * 60,  # Updated max-age for cookie
+    )
+    
+    return {"message": "Login successful", "remember_me": remember_me}    
+
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie("access_token")  # Clear the authentication cookie
+    return {"message": "Logged out successfully"}
+
+
 class UserCreate(BaseModel):
     email: EmailStr
     username: Annotated[str, StringConstraints(min_length=3, max_length=5)]

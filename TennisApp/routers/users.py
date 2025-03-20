@@ -41,14 +41,15 @@ class UserVerification(BaseModel):
 
 def redirect_to_login():
     redirect_response = RedirectResponse(url="/auth/login-page", status_code=status.HTTP_302_FOUND)
-    redirect_response.delete_cookie(key="access_token")
+    #redirect_response.delete_cookie(key="access_token")
     return redirect_response
 
 ### Pages ###
 @router.get("/change-password", status_code=status.HTTP_204_NO_CONTENT)
 async def render_change_password_page(request: Request, db: db_dependency):
     try:
-        user = await get_current_user(request.cookies.get('access_token')) # this will get our JWT
+        #user = await get_current_user(request.cookies.get('access_token')) # this will get our JWT
+        user = await get_current_user(request)
         
         #print(f"***** user *****: {user}")
         
