@@ -1,11 +1,44 @@
+function getToken() {
+    const cookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('access_token='));
+
+    if (!cookie) {
+        console.warn("No access_token cookie found.");
+        return null;
+    }
+
+    const tokenValue = cookie.split('=')[1];
+
+    if (!tokenValue || tokenValue === "undefined") {
+        console.warn("Invalid token value found in cookies.");
+        return null;
+    }
+
+    console.log("Token found in cookie:", tokenValue);
+    return tokenValue;
+}
+
 // Login Form
 document.addEventListener("DOMContentLoaded", function () {
     // Check if user is already authenticated
     const token = getToken();
     console.log("retrieved token:", token);
     if (token) {
-        console.log("User is authenticated, redirecting...");
-        window.location.href = "/bookings/bookings-page"; // Redirect if already logged in
+        try {
+            // Decode token (Debugging step)
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            console.log("Decoded Token Payload:", payload);
+            // Redirect only if token looks valid
+            if (payload.exp && Date.now() / 1000 < payload.exp) {
+                console.log("Token is valid, redirecting to bookings...");
+                window.location.href = "/bookings/bookings-page";
+            } else {
+                console.warn("Token is expired or invalid. Staying on login page.");
+            }
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
     }
 
     const loginForm = document.getElementById("loginForm");
@@ -60,35 +93,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-
-// Logout function
-// async function logout() {
-//     try {
-//         const response = await fetch('/auth/logout', {  // Updated to call the backend logout API
-//             method: 'POST',
-//             credentials: 'include'  // Ensures cookies are included in the request
-//         });
-
-//         if (response.ok) {
-//             // Redirect to login page after successful logout
-//             window.location.href = '/auth/login-page';
-//         } else {
-//             alert('Logout failed. Please try again.');
-//         }
-//     } catch (error) {
-//         console.error('Logout error:', error);
-//         alert('An error occurred. Please try again.');
-//     }
-// };
-function logout() {
-    // Delete the access_token cookie
-    document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=lax";
-
-    // Redirect to login page
-    window.location.href = "/auth/login-page";
-}
-
-
 // Make the entire "Select a Date" box clickable
 document.addEventListener("DOMContentLoaded", function () {
     const datePickerContainer = document.getElementById("datePickerContainer");
@@ -129,26 +133,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// // Function to Retrieve Token from Cookies
-// function getToken() {
-//     const cookies = document.cookie.split('; ');
-//     for (let cookie of cookies) {
-//         if (cookie.startsWith('access_token=')) {
-//             return cookie.split('=')[1];
-//         }
-//     }
-//     return null;
-// }
-
-function getToken() {
-    console.log("... I'm getting the token: ")
-    const theToken = document.cookie
-                    .split('; ')
-                    .find(row => row.startsWith('access_token='))
-                    ?.split('=')[1]
-    console.log("...and the token is:", theToken);                    
-    return theToken || null;
-}
 
 // Show startTimePicker dropdown on click
 document.addEventListener("DOMContentLoaded", function () {

@@ -156,8 +156,10 @@ async def get_current_user(request: Request):
         return {"username": username, "id": user_id, "user_role": user_role}
 
     except ValueError:
+        print("ERROR: Token format incorrect")
         raise HTTPException(status_code=401, detail="Invalid token format")
     except JWTError:
+        print("ERROR: JWT decoding failed")
         raise HTTPException(status_code=401, detail="Invalid token")
         
 @router.post("/", status_code=status.HTTP_201_CREATED)
