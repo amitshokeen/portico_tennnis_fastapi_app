@@ -1,5 +1,5 @@
 from datetime import timedelta, datetime, timezone
-from fastapi import APIRouter, Depends, status, HTTPException, Request, Query, Response
+from fastapi import APIRouter, Depends, status, HTTPException, Request, Query, Response, Form
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, EmailStr, StringConstraints, field_validator, Field
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -184,7 +184,7 @@ async def create_user(
 async def login_for_access_token(
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    remember_me: bool = Query(False, description="Remember Me checkbox"),
+    remember_me: bool = Form(False),
     db: Session = Depends(get_db)
 ):
     print(f"DEBUG: Remember Me Received from Client: {remember_me}")
