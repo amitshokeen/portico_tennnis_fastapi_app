@@ -378,8 +378,18 @@ const passwordChangeForm = document.getElementById("passwordChangeForm");
 
                 if (response.ok) {
                     document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                    alert('Password change successful. Please log in again.');
-                    window.location.href = '/auth/login-page'; // Change this to your desired redirect page
+                    alert('Password change successful.');
+                    // Send logout request to backend
+                    fetch("/auth/logout", {
+                        method: "POST",
+                        credentials: "include"
+                    }).then(() => {
+                        console.log("Logout request sent.");
+                        window.location.href = "/auth/login-page"; // Redirect to login page
+                    }).catch(error => {
+                        console.error("Logout error:", error);
+                        window.location.href = "/auth/login-page"; // Ensure redirection even if logout request fails
+                    });
                 } else {
                     // Handle error
                     const errorData = await response.json();
