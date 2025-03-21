@@ -121,8 +121,7 @@ def create_access_token(username: str, user_id: int, role: str, expires_delta: t
 #     except JWTError:
 #         raise HTTPException(status_code=401, detail="Invalid token")
 
-async def get_current_user(request: Request):
-    db = next(get_db())
+async def get_current_user(request: Request, db: db_dependency):
     token = request.cookies.get("access_token")  # Fetch token from cookies
 
     if not token:

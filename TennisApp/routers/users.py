@@ -48,8 +48,7 @@ def redirect_to_login():
 @router.get("/change-password", status_code=status.HTTP_204_NO_CONTENT)
 async def render_change_password_page(request: Request, db: db_dependency):
     try:
-        #user = await get_current_user(request.cookies.get('access_token')) # this will get our JWT
-        user = await get_current_user(request)
+        user = await get_current_user(request, db)
         
         #print(f"***** user *****: {user}")
         

@@ -109,8 +109,7 @@ def redirect_to_login():
 @router.get("/bookings-page", status_code=status.HTTP_200_OK)
 async def render_bookings_page(request: Request, db: db_dependency):
     try:
-        #user = await get_current_user(request.cookies.get('access_token'))
-        user = await get_current_user(request)
+        user = await get_current_user(request, db)
         if user is None:
             return redirect_to_login()
 
@@ -153,8 +152,7 @@ async def render_bookings_page(request: Request, db: db_dependency):
 @router.get("/cancel-booking", status_code=status.HTTP_200_OK)
 async def render_cancel_booking_page(request: Request, db: db_dependency):
     try:
-        #user = await get_current_user(request.cookies.get('access_token'))
-        user = await get_current_user(request)
+        user = await get_current_user(request, db)
         if user is None:
             return redirect_to_login()
         

@@ -1,24 +1,3 @@
-// function getToken() {
-//     const cookie = document.cookie
-//         .split('; ')
-//         .find(row => row.startsWith('access_token='));
-
-//     if (!cookie) {
-//         console.warn("No access_token cookie found.");
-//         return null;
-//     }
-
-//     const tokenValue = cookie.split('=')[1];
-
-//     if (!tokenValue || tokenValue === "undefined") {
-//         console.warn("Invalid token value found in cookies.");
-//         return null;
-//     }
-
-//     console.log("Token found in cookie:", tokenValue);
-//     return tokenValue;
-// }
-
 // Login Form
 document.addEventListener("DOMContentLoaded", function () {
     // Check if user is already authenticated via backend session
