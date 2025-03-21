@@ -337,13 +337,24 @@ document.addEventListener("DOMContentLoaded", function () {
     // Logout functionality
     if (logoutButton) {
         logoutButton.addEventListener("click", function (event) {
-            event.preventDefault(); // Prevent default anchor behavior
+            event.preventDefault();
+
+            console.log("Logging out...");
 
             // Clear access token (logout)
             document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             
-            // Redirect to login page
-            window.location.href = "/auth/login-page";
+            // Send logout request to backend
+            fetch("/auth/logout", {
+                method: "POST",
+                credentials: "include"
+            }).then(() => {
+                console.log("Logout request sent.");
+                window.location.href = "/auth/login-page"; // Redirect to login page
+            }).catch(error => {
+                console.error("Logout error:", error);
+                window.location.href = "/auth/login-page"; // Ensure redirection even if logout request fails
+            });
         });
     }
 });
