@@ -216,6 +216,14 @@ async def logout(response: Response):
     response.delete_cookie("access_token")  # Clear the authentication cookie
     return {"message": "Logged out successfully"}
 
+@router.get("/check-session")
+async def check_session(user: dict = Depends(get_current_user)):
+    """
+    Checks if the user is authenticated based on the access_token cookie.
+    """
+    if user:
+        return {"message": "Authenticated", "user": user}
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
 class UserCreate(BaseModel):
     email: EmailStr

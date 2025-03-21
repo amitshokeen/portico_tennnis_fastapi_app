@@ -1,45 +1,40 @@
-function getToken() {
-    const cookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('access_token='));
+// function getToken() {
+//     const cookie = document.cookie
+//         .split('; ')
+//         .find(row => row.startsWith('access_token='));
 
-    if (!cookie) {
-        console.warn("No access_token cookie found.");
-        return null;
-    }
+//     if (!cookie) {
+//         console.warn("No access_token cookie found.");
+//         return null;
+//     }
 
-    const tokenValue = cookie.split('=')[1];
+//     const tokenValue = cookie.split('=')[1];
 
-    if (!tokenValue || tokenValue === "undefined") {
-        console.warn("Invalid token value found in cookies.");
-        return null;
-    }
+//     if (!tokenValue || tokenValue === "undefined") {
+//         console.warn("Invalid token value found in cookies.");
+//         return null;
+//     }
 
-    console.log("Token found in cookie:", tokenValue);
-    return tokenValue;
-}
+//     console.log("Token found in cookie:", tokenValue);
+//     return tokenValue;
+// }
 
 // Login Form
 document.addEventListener("DOMContentLoaded", function () {
-    // Check if user is already authenticated
-    const token = getToken();
-    console.log("retrieved token:", token);
-    if (token) {
-        try {
-            // Decode token (Debugging step)
-            const payload = JSON.parse(atob(token.split(".")[1]));
-            console.log("Decoded Token Payload:", payload);
-            // Redirect only if token looks valid
-            if (payload.exp && Date.now() / 1000 < payload.exp) {
-                console.log("Token is valid, redirecting to bookings...");
-                window.location.href = "/bookings/bookings-page";
-            } else {
-                console.warn("Token is expired or invalid. Staying on login page.");
-            }
-        } catch (error) {
-            console.error("Error decoding token:", error);
+    // Check if user is already authenticated via backend session
+    fetch("/auth/check-session", {
+        method: "GET",
+        credentials: "include"
+    }).then(res => {
+        if (res.ok) {
+            console.log("User is authenticated (via backend), redirecting...");
+            window.location.href = "/bookings/bookings-page";
+        } else {
+            console.log("User is not authenticated, stay on login page.");
         }
-    }
+    }).catch(error => {
+        console.error("Session check failed:", error);
+    });
 
     const loginForm = document.getElementById("loginForm");
     if (!loginForm) return;
