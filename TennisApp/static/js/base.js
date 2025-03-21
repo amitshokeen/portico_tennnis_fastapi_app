@@ -1,19 +1,21 @@
 // Login Form
 document.addEventListener("DOMContentLoaded", function () {
-    // Check if user is already authenticated via backend session
-    fetch("/auth/check-session", {
-        method: "GET",
-        credentials: "include"
-    }).then(res => {
-        if (res.ok) {
-            console.log("User is authenticated (via backend), redirecting...");
-            window.location.href = "/bookings/bookings-page";
-        } else {
-            console.log("User is not authenticated, stay on login page.");
-        }
-    }).catch(error => {
-        console.error("Session check failed:", error);
-    });
+    // Only run this redirect logic if we're actually on the login page
+    if (window.location.pathname === "/auth/login-page") {
+        fetch("/auth/check-session", {
+            method: "GET",
+            credentials: "include"
+        }).then(res => {
+            if (res.ok) {
+                console.log("User is authenticated (via backend), redirecting...");
+                window.location.href = "/bookings/bookings-page";
+            } else {
+                console.log("User is not authenticated, stay on login page.");
+            }
+        }).catch(error => {
+            console.error("Session check failed:", error);
+        });
+    }
 
     const loginForm = document.getElementById("loginForm");
     if (!loginForm) return;
