@@ -370,22 +370,15 @@ const passwordChangeForm = document.getElementById("passwordChangeForm");
                 const response = await fetch('/user/change-password', {
                     method: 'PUT',
                     headers: {
-                        "Content-Type": 'application/json',
-                        //"Authorization": `Bearer ${getToken()}`
-
+                        "Content-Type": 'application/json'
                     },
                     body: JSON.stringify(passwordData),
                     credentials: 'include'
                 });
 
                 if (response.ok) {
-                    // Handle success
-                    //const data = await response.json();
-                    // Delete any cookies available
-                    //logout();
-                    // Save token to cookie
-                    //document.cookie = `access_token=${data.access_token}; path=/`;
-                    alert('Password change successful');
+                    document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    alert('Password change successful. Please log in again.');
                     window.location.href = '/auth/login-page'; // Change this to your desired redirect page
                 } else {
                     // Handle error
