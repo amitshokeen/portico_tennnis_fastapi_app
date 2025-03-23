@@ -2,15 +2,17 @@
 <div class="container">
     <h2>Portico Tennis Login</h2>
     <form id="loginForm">
-        <input type="text" id="username" placeholder="Block & apartment number, e.g., a301 or D203" name="username" autocomplete="username" required><br>
+        <input type="text" id="username" placeholder="Block & apartment number, e.g., a301 or D203" name="username" autocomplete="username" required>
         <div class="password-field">
-            <input type="password" id="password" placeholder="Password" name="password" autocomplete="current-password" required><br>
+            <input type="password" id="password" placeholder="Password" name="password" autocomplete="current-password" required>
             <i class="far fa-eye-slash" id="toggleLoginPassword"></i>
         </div>
         <div class="remember-me">
-            <input type="checkbox" id="rememberMe" name="remember_me">
-            <label for="rememberMe">Remember Me</label>
-        </div>
+            <label for="rememberMe">
+                <input type="checkbox" id="rememberMe" name="remember_me">
+                Remember Me
+            </label>
+        </div>        
         <button type="submit">Login</button>
         <div id="loadingSpinner" class="loading-spinner hidden"></div>
     </form>
