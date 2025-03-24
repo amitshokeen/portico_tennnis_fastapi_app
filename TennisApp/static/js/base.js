@@ -75,7 +75,7 @@ The date picker must block all dates other than the current date and the dates 6
 But, although this works well on all browsers on PC as well as Android phone, it does not do so on iPhone.
 I am commenting out the datepicker related code and replacing it with the code that should work on iPhone as well.
 The challenge is that testing can only be done once the app is deployed to production & then I can test it on my son's iPhone.*/
-// // Make the entire "Select a Date" box clickable
+// Make the entire "Select a Date" box clickable
 // document.addEventListener("DOMContentLoaded", function () {
 //     const datePickerContainer = document.getElementById("datePickerContainer");
 //     if (datePickerContainer) {
@@ -155,6 +155,45 @@ The challenge is that testing can only be done once the app is deployed to produ
 /* This is the end of the datepicker code. try1 */
 /* Start of the datepicker code. This time using Flatpickr. try2*/
 // Use Flatpickr for consistent date picking across browsers
+// document.addEventListener("DOMContentLoaded", function () {
+//     const datePicker = document.getElementById("datePicker");
+//     if (!datePicker) return;
+
+//     const today = new Date();
+//     const oneWeekLater = new Date();
+//     oneWeekLater.setDate(today.getDate() + 6);
+
+//     // Initialize Flatpickr
+//     flatpickr(datePicker, {
+//         minDate: today,
+//         maxDate: oneWeekLater,
+//         defaultDate: today,
+//         dateFormat: "Y-m-d",
+//         onChange: function (selectedDates, dateStr) {
+//             console.log("User selected date:", dateStr);
+//         }
+//     });
+// });
+/* end of try2. Works well on my Mac on localhost. Let me deploy and test on my son's iPhone*/
+/* start try3 */
+// Make the entire "Select a Date" box clickable
+document.addEventListener("DOMContentLoaded", function () {
+    const datePickerContainer = document.getElementById("datePickerContainer");
+    if (datePickerContainer) {
+        datePickerContainer.addEventListener("click", function () {
+            document.getElementById("datePicker").showPicker();
+        });
+    }
+});
+
+// Intl.DateTimeFormat for consistent yyyy-MM-dd format
+const formatter = new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+});
+
+// Date picker setup
 document.addEventListener("DOMContentLoaded", function () {
     const datePicker = document.getElementById("datePicker");
     if (!datePicker) return;
@@ -163,19 +202,38 @@ document.addEventListener("DOMContentLoaded", function () {
     const oneWeekLater = new Date();
     oneWeekLater.setDate(today.getDate() + 6);
 
-    // Initialize Flatpickr
-    flatpickr(datePicker, {
-        minDate: today,
-        maxDate: oneWeekLater,
-        defaultDate: today,
-        dateFormat: "Y-m-d",
-        onChange: function (selectedDates, dateStr) {
-            console.log("User selected date:", dateStr);
+    // Format to yyyy-MM-dd
+    const formatDate = (date) => {
+        return date.toISOString().split("T")[0];
+    };
+
+    const todayStr = formatDate(today);
+    const oneWeekLaterStr = formatDate(oneWeekLater);
+
+    // Set initial value and boundaries
+    datePicker.value = todayStr;
+    datePicker.min = todayStr;
+    datePicker.max = oneWeekLaterStr;
+
+    console.log("Initial date on page load:", todayStr);
+
+    // Manual validation fallback for devices that ignore min/max
+    datePicker.addEventListener("change", function () {
+        const selected = new Date(datePicker.value);
+        selected.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        oneWeekLater.setHours(0, 0, 0, 0);
+
+        if (selected < today || selected > oneWeekLater) {
+            alert("Please select a date between today and 6 days from now.");
+            datePicker.value = todayStr; // Reset to today
+            console.warn("Invalid date selected. Reset to today.");
+        } else {
+            console.log("User's selected date:", datePicker.value);
         }
     });
 });
-/* end of try2. Works well on my Mac on localhost. Let me deploy and test on my son's iPhone*/
-
+/* end try3 */
 
 
 
