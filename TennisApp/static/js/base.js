@@ -69,45 +69,90 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// Make the entire "Select a Date" box clickable
+
+/* The date picker does not work as expected on iPhone with Chrome as well as the Safari browser. 
+The date picker must block all dates other than the current date and the dates 6 days ahead in the future.
+But, although this works well on all browsers on PC as well as Android phone, it does not do so on iPhone.
+I am commenting out the datepicker related code and replacing it with the code that should work on iPhone as well.
+The challenge is that testing can only be done once the app is deployed to production & then I can test it on my son's iPhone.*/
+// // Make the entire "Select a Date" box clickable
+// document.addEventListener("DOMContentLoaded", function () {
+//     const datePickerContainer = document.getElementById("datePickerContainer");
+//     if (datePickerContainer) {
+//         datePickerContainer.addEventListener("click", function() {
+//             document.getElementById("datePicker").showPicker(); 
+//         });
+//     }
+// });
+
+// // Intl.DateTimeFormat takes care of the timezone and the daylight change
+// const formatter = new Intl.DateTimeFormat('en-CA', {
+//     year: 'numeric', month: '2-digit', day: '2-digit'
+// });
+
+// // Date picker
+// document.addEventListener("DOMContentLoaded", function () {
+//     const datePicker = document.getElementById("datePicker");
+//     if (!datePicker) return;
+//     const today = new Date();
+//     const one_week_later = new Date();
+//     let user_selected_date = formatter.format(today); // yyyy-MM-dd format accepted by the browser. user_selected_date is initiated as current date.
+//     one_week_later_formatted = formatter.format(
+//         one_week_later.setDate(
+//             today.getDate() + 6
+//         ))
+    
+//     datePicker.value = user_selected_date;
+//     datePicker.min = formatter.format(today);
+//     datePicker.max = one_week_later_formatted;
+//     // Log the initial value on page load
+//     console.log("Initial date on page load:", user_selected_date);
+
+//     // User changes the date
+//     datePicker.addEventListener("change", function () {
+//         user_selected_date = datePicker.value;
+//         console.log("User's selected date:", user_selected_date);
+//     });
+// });
+/* The updated code for the datepicker starts here. */
 document.addEventListener("DOMContentLoaded", function () {
     const datePickerContainer = document.getElementById("datePickerContainer");
-    if (datePickerContainer) {
-        datePickerContainer.addEventListener("click", function() {
-            document.getElementById("datePicker").showPicker(); 
-        });
-    }
-});
-
-// Intl.DateTimeFormat takes care of the timezone and the daylight change
-const formatter = new Intl.DateTimeFormat('en-CA', {
-    year: 'numeric', month: '2-digit', day: '2-digit'
-});
-
-// Date picker
-document.addEventListener("DOMContentLoaded", function () {
     const datePicker = document.getElementById("datePicker");
     if (!datePicker) return;
+
+    // Make the entire "Select a Date" box clickable
+    if (datePickerContainer) {
+        datePickerContainer.addEventListener("click", function () {
+            datePicker.showPicker();
+        });
+    }
+
     const today = new Date();
-    const one_week_later = new Date();
-    let user_selected_date = formatter.format(today); // yyyy-MM-dd format accepted by the browser. user_selected_date is initiated as current date.
-    one_week_later_formatted = formatter.format(
-        one_week_later.setDate(
-            today.getDate() + 6
-        ))
-    
+    const oneWeekLater = new Date();
+    oneWeekLater.setDate(today.getDate() + 6);
+
+    // Format the dates in ISO format (yyyy-mm-dd) which input[type="date"] expects
+    const formatDate = (date) => {
+        return date.toISOString().split("T")[0]; // gives yyyy-MM-dd
+    };
+
+    const user_selected_date = formatDate(today);
+    const one_week_later_formatted = formatDate(oneWeekLater);
+
+    // Set date picker boundaries
     datePicker.value = user_selected_date;
-    datePicker.min = formatter.format(today);
+    datePicker.min = user_selected_date;
     datePicker.max = one_week_later_formatted;
-    // Log the initial value on page load
+
     console.log("Initial date on page load:", user_selected_date);
 
-    // User changes the date
+    // Handle user change
     datePicker.addEventListener("change", function () {
-        user_selected_date = datePicker.value;
-        console.log("User's selected date:", user_selected_date);
+        console.log("User's selected date:", datePicker.value);
     });
 });
+/* This is the end of the datepicker code. */
+
 
 
 // Show startTimePicker dropdown on click
