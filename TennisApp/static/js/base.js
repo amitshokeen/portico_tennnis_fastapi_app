@@ -114,44 +114,68 @@ The challenge is that testing can only be done once the app is deployed to produ
 //         console.log("User's selected date:", user_selected_date);
 //     });
 // });
-/* The updated code for the datepicker starts here. */
+/* The updated code for the datepicker starts here. try1*/
+/* Again replacing this entire block as it did not produce the desired result.*/
+// document.addEventListener("DOMContentLoaded", function () {
+//     const datePickerContainer = document.getElementById("datePickerContainer");
+//     const datePicker = document.getElementById("datePicker");
+//     if (!datePicker) return;
+
+//     // Make the entire "Select a Date" box clickable
+//     if (datePickerContainer) {
+//         datePickerContainer.addEventListener("click", function () {
+//             datePicker.showPicker();
+//         });
+//     }
+
+//     const today = new Date();
+//     const oneWeekLater = new Date();
+//     oneWeekLater.setDate(today.getDate() + 6);
+
+//     // Format the dates in ISO format (yyyy-mm-dd) which input[type="date"] expects
+//     const formatDate = (date) => {
+//         return date.toISOString().split("T")[0]; // gives yyyy-MM-dd
+//     };
+
+//     const user_selected_date = formatDate(today);
+//     const one_week_later_formatted = formatDate(oneWeekLater);
+
+//     // Set date picker boundaries
+//     datePicker.value = user_selected_date;
+//     datePicker.min = user_selected_date;
+//     datePicker.max = one_week_later_formatted;
+
+//     console.log("Initial date on page load:", user_selected_date);
+
+//     // Handle user change
+//     datePicker.addEventListener("change", function () {
+//         console.log("User's selected date:", datePicker.value);
+//     });
+// });
+/* This is the end of the datepicker code. try1 */
+/* Start of the datepicker code. This time using Flatpickr. try2*/
+// Use Flatpickr for consistent date picking across browsers
 document.addEventListener("DOMContentLoaded", function () {
-    const datePickerContainer = document.getElementById("datePickerContainer");
     const datePicker = document.getElementById("datePicker");
     if (!datePicker) return;
-
-    // Make the entire "Select a Date" box clickable
-    if (datePickerContainer) {
-        datePickerContainer.addEventListener("click", function () {
-            datePicker.showPicker();
-        });
-    }
 
     const today = new Date();
     const oneWeekLater = new Date();
     oneWeekLater.setDate(today.getDate() + 6);
 
-    // Format the dates in ISO format (yyyy-mm-dd) which input[type="date"] expects
-    const formatDate = (date) => {
-        return date.toISOString().split("T")[0]; // gives yyyy-MM-dd
-    };
-
-    const user_selected_date = formatDate(today);
-    const one_week_later_formatted = formatDate(oneWeekLater);
-
-    // Set date picker boundaries
-    datePicker.value = user_selected_date;
-    datePicker.min = user_selected_date;
-    datePicker.max = one_week_later_formatted;
-
-    console.log("Initial date on page load:", user_selected_date);
-
-    // Handle user change
-    datePicker.addEventListener("change", function () {
-        console.log("User's selected date:", datePicker.value);
+    // Initialize Flatpickr
+    flatpickr(datePicker, {
+        minDate: today,
+        maxDate: oneWeekLater,
+        defaultDate: today,
+        dateFormat: "Y-m-d",
+        onChange: function (selectedDates, dateStr) {
+            console.log("User selected date:", dateStr);
+        }
     });
 });
-/* This is the end of the datepicker code. */
+/* end of try2. Works well on my Mac on localhost. Let me deploy and test on my son's iPhone*/
+
 
 
 
