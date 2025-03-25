@@ -177,63 +177,120 @@ The challenge is that testing can only be done once the app is deployed to produ
 /* end of try2. Works well on my Mac on localhost. Let me deploy and test on my son's iPhone*/
 /* start try3 */
 // Make the entire "Select a Date" box clickable
-document.addEventListener("DOMContentLoaded", function () {
-    const datePickerContainer = document.getElementById("datePickerContainer");
-    if (datePickerContainer) {
-        datePickerContainer.addEventListener("click", function () {
-            document.getElementById("datePicker").showPicker();
-        });
-    }
-});
+// document.addEventListener("DOMContentLoaded", function () {
+//     const datePickerContainer = document.getElementById("datePickerContainer");
+//     if (datePickerContainer) {
+//         datePickerContainer.addEventListener("click", function () {
+//             document.getElementById("datePicker").showPicker();
+//         });
+//     }
+// });
 
-// Intl.DateTimeFormat for consistent yyyy-MM-dd format
-const formatter = new Intl.DateTimeFormat('en-CA', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-});
+// // Intl.DateTimeFormat for consistent yyyy-MM-dd format
+// const formatter = new Intl.DateTimeFormat('en-CA', {
+//     year: 'numeric',
+//     month: '2-digit',
+//     day: '2-digit'
+// });
 
-// Date picker setup
+// // Date picker setup
+// document.addEventListener("DOMContentLoaded", function () {
+//     const datePicker = document.getElementById("datePicker");
+//     if (!datePicker) return;
+
+//     const today = new Date();
+//     const oneWeekLater = new Date();
+//     oneWeekLater.setDate(today.getDate() + 6);
+
+//     // Format to yyyy-MM-dd
+//     const formatDate = (date) => {
+//         return date.toISOString().split("T")[0];
+//     };
+
+//     const todayStr = formatDate(today);
+//     const oneWeekLaterStr = formatDate(oneWeekLater);
+
+//     // Set initial value and boundaries
+//     datePicker.value = todayStr;
+//     datePicker.min = todayStr;
+//     datePicker.max = oneWeekLaterStr;
+
+//     console.log("Initial date on page load:", todayStr);
+
+//     // Manual validation fallback for devices that ignore min/max
+//     datePicker.addEventListener("change", function () {
+//         const selected = new Date(datePicker.value);
+//         selected.setHours(0, 0, 0, 0);
+//         today.setHours(0, 0, 0, 0);
+//         oneWeekLater.setHours(0, 0, 0, 0);
+
+//         if (selected < today || selected > oneWeekLater) {
+//             alert("Please select a date between today and 6 days from now.");
+//             datePicker.value = todayStr; // Reset to today
+//             console.warn("Invalid date selected. Reset to today.");
+//         } else {
+//             console.log("User's selected date:", datePicker.value);
+//         }
+//     });
+// });
+/* end try3 */
+/* start try4 */
+function formatDateLocal(date) {
+    const sydneyFormatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Australia/Sydney',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+
+    // Converts from parts (ensures consistent yyyy-MM-dd format)
+    const parts = sydneyFormatter.formatToParts(date);
+    const year = parts.find(p => p.type === 'year').value;
+    const month = parts.find(p => p.type === 'month').value;
+    const day = parts.find(p => p.type === 'day').value;
+
+    return `${year}-${month}-${day}`;
+}
 document.addEventListener("DOMContentLoaded", function () {
     const datePicker = document.getElementById("datePicker");
-    if (!datePicker) return;
+    const datePickerButton = document.getElementById("datePickerButton");
+
+    if (!datePicker || !datePickerButton) return;
 
     const today = new Date();
     const oneWeekLater = new Date();
     oneWeekLater.setDate(today.getDate() + 6);
 
-    // Format to yyyy-MM-dd
-    const formatDate = (date) => {
-        return date.toISOString().split("T")[0];
-    };
+    const todayFormatted = formatDateLocal(today);
+    const maxDateFormatted = formatDateLocal(oneWeekLater);
 
-    const todayStr = formatDate(today);
-    const oneWeekLaterStr = formatDate(oneWeekLater);
+    datePicker.min = todayFormatted;
+    datePicker.max = maxDateFormatted;
+    datePicker.value = todayFormatted;
 
-    // Set initial value and boundaries
-    datePicker.value = todayStr;
-    datePicker.min = todayStr;
-    datePicker.max = oneWeekLaterStr;
+    console.log("Initial date (Sydney):", todayFormatted);
 
-    console.log("Initial date on page load:", todayStr);
-
-    // Manual validation fallback for devices that ignore min/max
-    datePicker.addEventListener("change", function () {
-        const selected = new Date(datePicker.value);
-        selected.setHours(0, 0, 0, 0);
-        today.setHours(0, 0, 0, 0);
-        oneWeekLater.setHours(0, 0, 0, 0);
-
-        if (selected < today || selected > oneWeekLater) {
-            alert("Please select a date between today and 6 days from now.");
-            datePicker.value = todayStr; // Reset to today
-            console.warn("Invalid date selected. Reset to today.");
-        } else {
-            console.log("User's selected date:", datePicker.value);
-        }
+    // Show native date picker
+    datePickerButton.addEventListener("click", function () {
+        datePicker.showPicker();
     });
+
+    // On change
+    datePicker.addEventListener("change", function () {
+        const selected = datePicker.value;
+        console.log("User selected:", selected);
+
+        if (selected < todayFormatted || selected > maxDateFormatted) {
+            alert("Please choose a date within the next 7 days.");
+            datePicker.value = todayFormatted;
+        }
+
+        datePickerButton.textContent = `Date: ${selected}`;
+    });
+
+    datePickerButton.textContent = `Date: ${todayFormatted}`;
 });
-/* end try3 */
+/* end try4 */
 
 
 
