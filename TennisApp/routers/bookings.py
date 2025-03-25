@@ -116,6 +116,15 @@ async def render_bookings_page(request: Request, db: db_dependency):
         # Get the current date
         current_date = datetime.now(sydney_tz).date()
 
+        next_7_days = [(current_date + timedelta(days=i)) for i in range(7)]
+
+        date_options = [
+            {
+                "value": date.isoformat(),
+                "label": f"{date.strftime('%a')} {date.strftime('%Y-%m-%d')}"
+            } for date in next_7_days
+        ]
+
         # Query bookings, joining with User table and ordering by date and start time
         all_bookings = (
             db.query(Booking, User.username)
@@ -142,7 +151,8 @@ async def render_bookings_page(request: Request, db: db_dependency):
         return templates.TemplateResponse("bookings.html", {
             "request": request, 
             "bookings": serialized_bookings, 
-            "user": user
+            "user": user,
+            "date_options": date_options
         })
     
     except Exception as e:

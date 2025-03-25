@@ -3,13 +3,10 @@
 <div class="containers-wrapper">
     <div class="container">
         <h2>Portico Tennis Court</h2>
-        <!--<label class="">Select a Date:</label>-->
-            <small style="color: #666;">Please select a date between today and 6 days from now.</small>
             <div id="datePickerContainer">
-                <button id="datePickerButton" type="button">Select a Date</button>
-                <input type="date" id="datePicker" class="hidden" />
+                <input type="text" id="datePicker" class="" placeholder="Select a Date" readonly>
+                <div id="dateMenu"></div>
             </div>
-            <!--<button id="checkDateButton">Check Availability</button>-->
             <div class="start-time-container">
                 <input type="text" id="startTimePicker" class="" placeholder="Pick a start time" readonly>
                 <div class="" id="startTimeMenu"></div>
@@ -29,4 +26,7 @@
 
 <script>
     const bookingsData = {{ bookings | tojson | safe }};
+    const dateOptionsData = {{ date_options | tojson | safe }};
 </script>
+    
+

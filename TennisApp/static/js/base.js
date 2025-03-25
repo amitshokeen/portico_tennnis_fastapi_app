@@ -69,7 +69,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-
 /* The date picker does not work as expected on iPhone with Chrome as well as the Safari browser. 
 The date picker must block all dates other than the current date and the dates 6 days ahead in the future.
 But, although this works well on all browsers on PC as well as Android phone, it does not do so on iPhone.
@@ -235,64 +234,191 @@ The challenge is that testing can only be done once the app is deployed to produ
 // });
 /* end try3 */
 /* start try4 */
-function formatDateLocal(date) {
-    const sydneyFormatter = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Australia/Sydney',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    });
+// function formatDateLocal(date) {
+//     const sydneyFormatter = new Intl.DateTimeFormat('en-CA', {
+//         timeZone: 'Australia/Sydney',
+//         year: 'numeric',
+//         month: '2-digit',
+//         day: '2-digit'
+//     });
 
-    // Converts from parts (ensures consistent yyyy-MM-dd format)
-    const parts = sydneyFormatter.formatToParts(date);
-    const year = parts.find(p => p.type === 'year').value;
-    const month = parts.find(p => p.type === 'month').value;
-    const day = parts.find(p => p.type === 'day').value;
+//     // Converts from parts (ensures consistent yyyy-MM-dd format)
+//     const parts = sydneyFormatter.formatToParts(date);
+//     const year = parts.find(p => p.type === 'year').value;
+//     const month = parts.find(p => p.type === 'month').value;
+//     const day = parts.find(p => p.type === 'day').value;
 
-    return `${year}-${month}-${day}`;
-}
+//     return `${year}-${month}-${day}`;
+// }
+// document.addEventListener("DOMContentLoaded", function () {
+//     const datePicker = document.getElementById("datePicker");
+//     const datePickerButton = document.getElementById("datePickerButton");
+
+//     if (!datePicker || !datePickerButton) return;
+
+//     const today = new Date();
+//     const oneWeekLater = new Date();
+//     oneWeekLater.setDate(today.getDate() + 6);
+
+//     const todayFormatted = formatDateLocal(today);
+//     const maxDateFormatted = formatDateLocal(oneWeekLater);
+
+//     datePicker.min = todayFormatted;
+//     datePicker.max = maxDateFormatted;
+//     datePicker.value = todayFormatted;
+
+//     console.log("Initial date (Sydney):", todayFormatted);
+
+//     // Show native date picker
+//     datePickerButton.addEventListener("click", function () {
+//         datePicker.showPicker();
+//     });
+
+//     // On change
+//     datePicker.addEventListener("change", function () {
+//         const selected = datePicker.value;
+//         console.log("User selected:", selected);
+
+//         if (selected < todayFormatted || selected > maxDateFormatted) {
+//             alert("Please choose a date within the next 7 days.");
+//             datePicker.value = todayFormatted;
+//         }
+
+//         datePickerButton.textContent = `Date: ${selected}`;
+//     });
+
+//     datePickerButton.textContent = `Date: ${todayFormatted}`;
+// });
+/* end try4 */
+/* start try5 */
+// document.addEventListener("DOMContentLoaded", function () {
+//     const datePicker = document.getElementById("datePicker");
+//     const dateOptions = dateOptionsData;
+
+//     // Populate the dropdown with date options
+//     dateOptions.forEach((option) => {
+//         const optionElement = document.createElement("option");
+//         optionElement.value = option.value;
+//         optionElement.textContent = option.label;
+//         datePicker.appendChild(optionElement);
+//     });
+
+//     // Event listener for date selection
+//     datePicker.addEventListener("change", function() {
+//         const selectedDate = this.value;
+//         console.log("Selected date:", selectedDate);
+//         // You can use this selectedDate value for further processing
+//     });
+// });
+/* end try5 */
+/* start try6 */
+// document.addEventListener("DOMContentLoaded", function () {
+//     const datePicker = document.getElementById("datePicker");
+//     const dateOptions = dateOptionsData;
+
+//     // Get current date in Sydney timezone
+//     const sydneyTime = new Date().toLocaleString("en-US", {timeZone: "Australia/Sydney"});
+//     const currentDate = new Date(sydneyTime).toISOString().split('T')[0];
+
+//     // Populate the dropdown with date options
+//     dateOptions.forEach((option) => {
+//         const optionElement = document.createElement("option");
+//         optionElement.value = option.value;
+//         optionElement.textContent = option.label;
+        
+//         // Pre-select the current date
+//         if (option.value === currentDate) {
+//             optionElement.selected = true;
+//         }
+        
+//         datePicker.appendChild(optionElement);
+//     });
+
+//     // Event listener for date selection
+//     datePicker.addEventListener("change", function() {
+//         const selectedDate = this.value;
+//         console.log("Selected date:", selectedDate);
+//         // You can use this selectedDate value for further processing
+//     });
+
+//     // Trigger change event for initial selection
+//     datePicker.dispatchEvent(new Event('change'));
+// });
+/* end try6 */
+/* start try7 */
+// document.addEventListener("DOMContentLoaded", function () {
+//     const datePicker = document.getElementById("datePicker");
+//     const dateOptions = dateOptionsData;
+
+//     // Add the "Select a Date:" option
+//     const defaultOption = document.createElement("option");
+//     defaultOption.value = "";
+//     defaultOption.textContent = "Select a Date:";
+//     defaultOption.disabled = true;
+//     defaultOption.selected = true;
+//     datePicker.appendChild(defaultOption);
+
+//     // Populate the dropdown with date options
+//     dateOptions.forEach((option) => {
+//         const optionElement = document.createElement("option");
+//         optionElement.value = option.value;
+//         optionElement.textContent = option.label;
+//         datePicker.appendChild(optionElement);
+//     });
+
+//     // Event listener for date selection
+//     datePicker.addEventListener("change", function() {
+//         const selectedDate = this.value;
+//         console.log("Selected date:", selectedDate);
+//         // You can use this selectedDate value for further processing
+//     });
+// });
+/* end try7 */
+/* start try8 */
 document.addEventListener("DOMContentLoaded", function () {
     const datePicker = document.getElementById("datePicker");
-    const datePickerButton = document.getElementById("datePickerButton");
+    const dateMenu = document.getElementById("dateMenu");
+    const dateOptions = dateOptionsData; // from the backend
 
-    if (!datePicker || !datePickerButton) return;
+    if (datePicker && dateMenu) {
+        datePicker.addEventListener("click", () => {
+            dateMenu.style.display = "block";
+            populateDateMenu(dateOptions);
+        });
+    }
 
-    const today = new Date();
-    const oneWeekLater = new Date();
-    oneWeekLater.setDate(today.getDate() + 6);
+    function populateDateMenu(availableDates) {
+        dateMenu.innerHTML = ""; // Clear existing options
 
-    const todayFormatted = formatDateLocal(today);
-    const maxDateFormatted = formatDateLocal(oneWeekLater);
-
-    datePicker.min = todayFormatted;
-    datePicker.max = maxDateFormatted;
-    datePicker.value = todayFormatted;
-
-    console.log("Initial date (Sydney):", todayFormatted);
-
-    // Show native date picker
-    datePickerButton.addEventListener("click", function () {
-        datePicker.showPicker();
-    });
-
-    // On change
-    datePicker.addEventListener("change", function () {
-        const selected = datePicker.value;
-        console.log("User selected:", selected);
-
-        if (selected < todayFormatted || selected > maxDateFormatted) {
-            alert("Please choose a date within the next 7 days.");
-            datePicker.value = todayFormatted;
+        if (availableDates.length === 0) {
+            dateMenu.innerHTML = "<div>No available dates</div>";
+            return;
         }
 
-        datePickerButton.textContent = `Date: ${selected}`;
+        availableDates.forEach(dateOption => {
+            const dateElement = document.createElement("div");
+            dateElement.textContent = dateOption.label; //for display
+            dateElement.addEventListener("click", () => {
+                datePicker.value = dateOption.label;
+                datePicker.dataset.value = dateOption.value; // Store the YYYY-MM-DD format
+                dateMenu.style.display = "none";
+                // Trigger any necessary updates for start time picker
+                document.getElementById("startTimePicker").value = "";
+                document.getElementById("endTimePicker").value = "";
+            });
+
+            dateMenu.appendChild(dateElement);
+        });
+    }
+
+    // Hide the dropdown when clicking outside
+    document.addEventListener("click", (event) => {
+        if (!datePicker.contains(event.target) && !dateMenu.contains(event.target)) {
+            dateMenu.style.display = "none";
+        }
     });
-
-    datePickerButton.textContent = `Date: ${todayFormatted}`;
 });
-/* end try4 */
-
-
+/* end try8 */
 
 // Show startTimePicker dropdown on click
 document.addEventListener("DOMContentLoaded", function () {
@@ -308,7 +434,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("startTimeMenu clicked...");
 
             // Get the selected date from the date picker
-            const selectedDate = datePicker.value;
+            //const selectedDate = datePicker.value;
+            const selectedDate = datePicker.dataset.value;
             if (!selectedDate) {
                 alert("Please select a date first.");
                 return;
@@ -394,7 +521,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("endTimeMenu clicked...");
 
             // Get the selected date from the date picker
-            const selectedDate = datePicker.value;
+            //const selectedDate = datePicker.value;
+            const selectedDate = datePicker.dataset.value;
             if (!selectedDate) {
                 alert("Please select a date first.");
                 return;
@@ -645,7 +773,8 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
 
         // Extract values from form
-        const selectedDate = datePicker.value;
+        //const selectedDate = datePicker.value;
+        const selectedDate = datePicker.dataset.value;
         const selectedStartTime = startTimePicker.value;
         const selectedEndTime = endTimePicker.value;
 

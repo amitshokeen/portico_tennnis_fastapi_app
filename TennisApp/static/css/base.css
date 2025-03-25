@@ -55,6 +55,8 @@
     border-radius: 5px;
     cursor: pointer;
     width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .login-container button:hover {
@@ -521,4 +523,45 @@ body.modal-open {
     color: white;
     font-size: 12px;
     font-weight: bold;
+}
+
+#datePickerContainer {
+    position: relative;
+    width: 100%;
+    /*margin-bottom: 10px;*/
+}
+
+#datePicker {
+    /*width: 93%;*/
+    /*padding: 10px;*/
+    /*margin: 10px 0;*/
+    /*border: 1px solid #ccc;*/
+    /*border-radius: 5px;*/
+    cursor: pointer;
+    background-color: #fff;
+}
+
+#dateMenu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-height: none;
+    overflow-y: visible;
+    display: none;
+    z-index: 10;
+}
+
+#dateMenu div {
+    padding: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+#dateMenu div:hover {
+    background-color: #f1f1f1;
 }
