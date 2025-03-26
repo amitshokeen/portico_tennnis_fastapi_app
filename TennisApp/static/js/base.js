@@ -431,7 +431,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (startTimePicker && startTimeMenu) {
         startTimePicker.addEventListener("click", async () => {
             startTimeMenu.style.display = "block";
-            console.log("startTimeMenu clicked...");
+            //console.log("startTimeMenu clicked...");
 
             // Get the selected date from the date picker
             //const selectedDate = datePicker.value;
@@ -459,10 +459,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 const data = await response.json();
-                console.log("Available start times:", data.available_start_times);
+                //console.log("Available start times:", data.available_start_times);
 
                 // let me convert the times to AM, PM here.    
-                console.log("******", data.available_start_times[63])
+                //console.log("******", data.available_start_times[63])
 
                 populateStartTimeMenu(data.available_start_times);
             } catch (error) {
@@ -518,7 +518,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (endTimePicker && endTimeMenu) {
         endTimePicker.addEventListener("click", async () => {
             endTimeMenu.style.display = "block";
-            console.log("endTimeMenu clicked...");
+            //console.log("endTimeMenu clicked...");
 
             // Get the selected date from the date picker
             //const selectedDate = datePicker.value;
@@ -530,7 +530,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Get the selected start time from the start time picker
             const startTime = startTimePicker.value;
-            console.log("startTime value is:", startTime)
+            //console.log("startTime value is:", startTime)
             if (!startTime) {
                 alert("Please select a start time first.");
                 return;
@@ -557,10 +557,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 const data = await response.json();
-                console.log("Available end times:", data.available_end_times);
+                //console.log("Available end times:", data.available_end_times);
 
                 // let me convert the times to AM, PM here.    
-                console.log("******", data.available_end_times[63])
+                //console.log("******", data.available_end_times[63])
 
                 populateEndTimeMenu(data.available_end_times);
             } catch (error) {
@@ -627,7 +627,7 @@ document.addEventListener("DOMContentLoaded", function () {
         logoutButton.addEventListener("click", function (event) {
             event.preventDefault();
 
-            console.log("Logging out...");
+            //console.log("Logging out...");
 
             // Clear access token (logout)
             document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -637,7 +637,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 method: "POST",
                 credentials: "include"
             }).then(() => {
-                console.log("Logout request sent.");
+                //console.log("Logout request sent.");
                 window.location.href = "/auth/login-page"; // Redirect to login page
             }).catch(error => {
                 console.error("Logout error:", error);
@@ -671,7 +671,7 @@ const passwordChangeForm = document.getElementById("passwordChangeForm");
                 newPassword: formData.get("newPassword")
             }
 
-            console.log("passwordData:", JSON.stringify(passwordData))
+            //console.log("passwordData:", JSON.stringify(passwordData))
 
             showLoading();  // Show spinner before the request
             try {
@@ -696,7 +696,7 @@ const passwordChangeForm = document.getElementById("passwordChangeForm");
                         method: "POST",
                         credentials: "include"
                     }).then(() => {
-                        console.log("Logout request sent.");
+                        //console.log("Logout request sent.");
                         window.location.href = "/auth/login-page"; // Redirect to login page
                     }).catch(error => {
                         console.error("Logout error:", error);
@@ -814,7 +814,7 @@ document.addEventListener("DOMContentLoaded", function () {
             status: "Confirmed"
         };
 
-        console.log("Confirming Booking:", requestBody);
+        //console.log("Confirming Booking:", requestBody);
 
         showLoading(); // Show spinner before request
 
@@ -830,7 +830,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             // Log the full response object to inspect it in detail
-            console.log("Network Response:", response);
+            //console.log("Network Response:", response);
 
             if (!response.ok) {
                 const errorData = await response.json();
@@ -838,7 +838,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const data = await response.json();
-            console.log("Booking Confirmed:", data);
+            //console.log("Booking Confirmed:", data);
             // console.log("Bookings Array:", data.bookings);
             // console.log("0: user_id:", data.bookings[0].user_id);
             // console.log("0: date:", data.bookings[0].date);
