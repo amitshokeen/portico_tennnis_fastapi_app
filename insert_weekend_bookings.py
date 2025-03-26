@@ -31,8 +31,9 @@ def insert_target_day_bookings(target_day: str):
     inserted_count = 0
 
     for user_id, date_val, start_str, end_str, created in booking_data:
-        start_dt = datetime.strptime(start_str, "%Y-%m-%d %H:%M:%S.%f").astimezone(sydney_tz)
-        end_dt = datetime.strptime(end_str, "%Y-%m-%d %H:%M:%S.%f").astimezone(sydney_tz)
+        start_dt = sydney_tz.localize(datetime.strptime(start_str, "%Y-%m-%d %H:%M:%S.%f"))
+        end_dt = sydney_tz.localize(datetime.strptime(end_str, "%Y-%m-%d %H:%M:%S.%f"))
+
 
         existing = db.query(Booking).filter_by(
             user_id=user_id,
