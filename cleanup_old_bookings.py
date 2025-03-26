@@ -1,3 +1,9 @@
+'''
+(ensuer that in database.py: `SQLALCHEMY_DATABASE_URL = 'sqlite:////home/amit/portico_tennnis_fastapi_app/tennisapp.db'`)
+Make a cron job for this:
+/home/amit/portico_tennnis_fastapi_app/.venv/bin/python /home/amit/portico_tennnis_fastapi_app/cleanup_old_bookings.py
+'''
+
 from datetime import datetime
 from sqlalchemy.orm import Session
 from TennisApp.database import SessionLocal

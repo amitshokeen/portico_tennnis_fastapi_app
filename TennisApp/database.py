@@ -3,7 +3,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 #SQLALCHEMY_DATABASE_URL = 'sqlite:///./tennisapp.db'
-SQLALCHEMY_DATABASE_URL = 'sqlite:////Users/ashokeen/learn_fastapi/portico_tennis_fastapi_app/tennisapp.db'
+#SQLALCHEMY_DATABASE_URL = 'sqlite:////Users/ashokeen/learn_fastapi/portico_tennis_fastapi_app/tennisapp.db'
+SQLALCHEMY_DATABASE_URL = 'sqlite:////home/amit/portico_tennnis_fastapi_app/tennisapp.db'
 
 # Connects FastAPI to the database
 engine = create_engine(
@@ -20,3 +21,4 @@ SessionLocal = sessionmaker(
 
 # Lets us define tables easily
 Base = declarative_base()
+
