@@ -439,8 +439,8 @@ async def confirm_booking(
     current_date = datetime.now(sydney_tz).date()
 
     # Delete all bookings with dates earlier than the current date
-    db.query(Booking).filter(Booking.date < current_date).delete(synchronize_session=False)
-    db.commit()
+    #db.query(Booking).filter(Booking.date < current_date).delete(synchronize_session=False)
+    #db.commit()
 
     db.add(new_booking)
     db.commit()
